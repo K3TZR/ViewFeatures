@@ -8,7 +8,6 @@
 import Foundation
 import ComposableArchitecture
 
-import ApiModel
 import Shared
 
 public struct Ph1Feature: ReducerProtocol {
@@ -62,6 +61,5 @@ public struct Ph1Feature: ReducerProtocol {
 //      print("txSelected = \(state.txSelected)")
 //      return .none
 //    }
-    return .none
   }
 }

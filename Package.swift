@@ -11,14 +11,20 @@ let package = Package(
   ],
   products: [
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
+    .library(name: "CwFeature", targets: ["CwFeature"]),
     .library(name: "EqFeature", targets: ["EqFeature"]),
     .library(name: "LevelIndicatorView", targets: ["LevelIndicatorView"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "LogFeature", targets: ["LogFeature"]),
+    .library(name: "Ph1Feature", targets: ["Ph1Feature"]),
+    .library(name: "Ph2Feature", targets: ["Ph2Feature"]),
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "ProgressFeature", targets: ["ProgressFeature"]),
+    .library(name: "RightSideFeature", targets: ["RightSideFeature"]),
+    .library(name: "TxFeature", targets: ["TxFeature"]),
   ],
   dependencies: [
+    .package(url: "https://github.com/K3TZR/ApiFeatures.git", from: "1.0.1"),
     .package(url: "https://github.com/K3TZR/SharedFeatures.git", from: "1.3.1"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "0.42.0"),
   ],
@@ -30,14 +36,24 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     
+    // CwFeature
+    .target(name: "CwFeature", dependencies: [
+      "LevelIndicatorView",
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
     // EqFeature
     .target(name: "EqFeature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     
     // LevelIndicatorView
-    .target(name: "LevelIndicatorView", dependencies: []),
+    .target(name: "LevelIndicatorView", dependencies: [
+    ]),
     
     // LoginFeature
     .target(name: "LoginFeature", dependencies: [
@@ -51,6 +67,18 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
 
+    // Ph1Feature
+    .target(name: "Ph1Feature", dependencies: [
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+
+    // Ph2Feature
+    .target(name: "Ph2Feature", dependencies: [
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+
     // PickerFeature
     .target(name: "PickerFeature", dependencies: [
       .product(name: "Shared", package: "SharedFeatures"),
@@ -58,7 +86,24 @@ let package = Package(
     ]),
     
     // ProgressFeature
-      .target(name: "ProgressFeature",  dependencies: [
+    .target(name: "ProgressFeature",  dependencies: [
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // RightSideView
+    .target(name: "RightSideFeature",  dependencies: [
+      "CwFeature",
+      "EqFeature",
+      "Ph1Feature",
+      "Ph2Feature",
+      "TxFeature",
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // TxFeature
+    .target(name: "TxFeature", dependencies: [
+      .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
   ]

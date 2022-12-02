@@ -8,8 +8,6 @@
 import ComposableArchitecture
 import SwiftUI
 
-import ApiModel
-
 public struct TxView: View {
   let store: StoreOf<TxFeature>
 
@@ -80,6 +78,6 @@ public struct TxView: View {
 
 struct TxView_Previews: PreviewProvider {
     static var previews: some View {
-      TxView(store: Store(initialState: TxFeature.State(transmit: Transmit.shared), reducer: TxFeature()))
+      TxView(store: Store(initialState: TxFeature.State(), reducer: TxFeature()))
     }
 }

@@ -8,7 +8,6 @@
 import Foundation
 import ComposableArchitecture
 
-import ApiModel
 import Shared
 
 public struct CwFeature: ReducerProtocol {
@@ -16,13 +15,10 @@ public struct CwFeature: ReducerProtocol {
   public init() {}
   
   public struct State: Equatable {
-    var transmit: Transmit
 
     public init(
-      transmit: Transmit
     )
     {
-      self.transmit = transmit
     }
   }
   
@@ -42,35 +38,35 @@ public struct CwFeature: ReducerProtocol {
     switch action {
 
     case .breakinButton(let value):
-      state.transmit.transmitSetProperty(.cwBreakInEnabled, value)
+//      state.transmit.transmitSetProperty(.cwBreakInEnabled, value)
       return .none
       
     case .delayLevel(let value):
-      state.transmit.transmitSetProperty(.cwBreakInDelay, value)
+//      state.transmit.transmitSetProperty(.cwBreakInDelay, value)
       return .none
 
     case .iambicButton(let value):
-      state.transmit.transmitSetProperty(.cwIambicEnabled, value)
+//      state.transmit.transmitSetProperty(.cwIambicEnabled, value)
       return .none
 
     case .pitchChange(let value):
-      state.transmit.transmitSetProperty(.cwPitch, value)
+//      state.transmit.transmitSetProperty(.cwPitch, value)
       return .none
 
     case .sidetoneButton(let value):
-      state.transmit.transmitSetProperty(.cwSidetoneEnabled, value)
+//      state.transmit.transmitSetProperty(.cwSidetoneEnabled, value)
       return .none
 
     case .sidetoneGain(let value):
-      state.transmit.transmitSetProperty(.cwMonitorGain, value)
+//      state.transmit.transmitSetProperty(.cwMonitorGain, value)
       return .none
 
     case .sidetonePan(let value):
-      state.transmit.transmitSetProperty(.cwMonitorPan, value)
+//      state.transmit.transmitSetProperty(.cwMonitorPan, value)
       return .none
 
     case .speedLevel(let value):
-      state.transmit.transmitSetProperty(.cwSpeed, value)
+//      state.transmit.transmitSetProperty(.cwSpeed, value)
       return .none
     }
   }

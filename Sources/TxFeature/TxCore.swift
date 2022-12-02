@@ -8,7 +8,6 @@
 import Foundation
 import ComposableArchitecture
 
-import ApiModel
 import Shared
 
 public struct TxFeature: ReducerProtocol {
@@ -16,13 +15,10 @@ public struct TxFeature: ReducerProtocol {
   public init() {}
   
   public struct State: Equatable {
-    var transmit: Transmit
 
     public init(
-      transmit: Transmit
     )
     {
-      self.transmit = transmit
     }
   }
   

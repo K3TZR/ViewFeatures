@@ -8,7 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-import ApiModel
+import Objects
 import LevelIndicatorView
 
 // ----------------------------------------------------------------------------
@@ -91,6 +91,6 @@ public struct CwView: View {
 
 struct CwView_Previews: PreviewProvider {
     static var previews: some View {
-      CwView(store: Store(initialState: CwFeature.State(transmit: Transmit.shared), reducer: CwFeature()), transmit: Transmit.shared, alcMeter: ApiModel.shared.meters[id: 1]!)
+      CwView(store: Store(initialState: CwFeature.State(), reducer: CwFeature()), transmit: Transmit.shared, alcMeter: ApiModel.shared.meters[id: 1]!)
     }
 }

@@ -8,10 +8,11 @@
 import Foundation
 import ComposableArchitecture
 
+import Objects
 import Shared
 
-public struct EqFeature: ReducerProtocol, Equatable {
-
+public struct EqFeature: ReducerProtocol {
+  
   public init() {}
   
   public struct State: Equatable {
@@ -27,16 +28,16 @@ public struct EqFeature: ReducerProtocol, Equatable {
     var eqEnabled: Bool
 
     public init(
-      hz63: Int = 0,
-      hz125: Int = 0,
+      hz63: Int,
+      hz125: Int,
       hz250: Int = 0,
       hz500: Int = 0,
       hz1000: Int = 0,
       hz2000: Int = 0,
       hz4000: Int = 0,
       hz8000: Int = 0,
-      txSelected: Bool = false,
-      eqEnabled: Bool = false
+      txSelected: Bool,
+      eqEnabled: Bool
     )
     {
       self.hz63 = hz63
@@ -64,8 +65,6 @@ public struct EqFeature: ReducerProtocol, Equatable {
     case hz2000(Int)
     case hz4000(Int)
     case hz8000(Int)
-
-
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -88,6 +87,7 @@ public struct EqFeature: ReducerProtocol, Equatable {
 
     case .hz63(let value):
       state.hz63 = value
+      
       return .none
     case .hz125(let value):
       state.hz125 = value
@@ -110,8 +110,8 @@ public struct EqFeature: ReducerProtocol, Equatable {
     case .hz8000(let value):
       state.hz8000 = value
       return .none
-
-    default:
+    case .txButton:
+      state.txSelected.toggle()
       return .none
     }
   }

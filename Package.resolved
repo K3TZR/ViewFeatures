@@ -1,12 +1,39 @@
 {
   "pins" : [
     {
+      "identity" : "apifeatures",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/K3TZR/ApiFeatures.git",
+      "state" : {
+        "revision" : "6bd53d30b29182cc455dfd912a707db37bbfbfcd",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "cocoaasyncsocket",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/robbiehanson/CocoaAsyncSocket",
+      "state" : {
+        "revision" : "dbdc00669c1ced63b27c3c5f052ee4d28f10150c",
+        "version" : "7.6.5"
+      }
+    },
+    {
       "identity" : "combine-schedulers",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/combine-schedulers",
       "state" : {
         "revision" : "882ac01eb7ef9e36d4467eb4b1151e74fcef85ab",
         "version" : "0.9.1"
+      }
+    },
+    {
+      "identity" : "jwtdecode.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/auth0/JWTDecode.swift",
+      "state" : {
+        "revision" : "3cd207fb9e943b6168a117baa3936c823204c2dc",
+        "version" : "2.6.3"
       }
     },
     {

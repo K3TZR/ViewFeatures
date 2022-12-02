@@ -45,7 +45,7 @@ public struct EqView: View {
             
             Group {
               Toggle("On", isOn: viewStore.binding(
-                get: \.eqEnabled,
+                get: \.eqEnabled ,
                 send: .eqEnabledButton ))
               Toggle("Rx", isOn: viewStore.binding(
                 get: { !$0.txSelected },
@@ -97,14 +97,20 @@ struct EqView_Previews: PreviewProvider {
   static var previews: some View {
     EqView(store: Store(
       initialState: EqFeature.State(
-         txSelected: false),
+        hz63: 5,
+        hz125: -5,
+        txSelected: false,
+        eqEnabled: true),
       reducer: EqFeature())
     )
     .previewDisplayName("Rx Equalizer")
     
     EqView(store: Store(
       initialState: EqFeature.State(
-        txSelected: true),
+        hz63: 5,
+        hz125: -5,
+        txSelected: true,
+        eqEnabled: true),
       reducer: EqFeature())
     )
     .previewDisplayName("Tx Equalizer")
