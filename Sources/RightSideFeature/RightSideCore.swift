@@ -19,9 +19,6 @@ public struct RightSideFeature: ReducerProtocol {
   
   public init() {}
   
-  @Dependency(\.apiModel) var apiModel
-  
-  
   public struct State: Equatable {
     var txEqSelected: Bool { didSet { UserDefaults.standard.set(txEqSelected, forKey: "txEqSelected") } }
     var rx: Bool
@@ -84,11 +81,7 @@ public struct RightSideFeature: ReducerProtocol {
         
       case .eqButton:
         if state.eqState == nil {
-//          let eqId = state.txEqSelected ? "txsc" : "rxsc"
-          state.eqState = EqFeature.State(hz63: 9,
-                                          hz125: -9,
-                                          txSelected: state.txEqSelected,
-                                          eqEnabled: false)
+          state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: false)
         } else {
           state.eqState = nil
         }
@@ -126,14 +119,6 @@ public struct RightSideFeature: ReducerProtocol {
         // ----------------------------------------------------------------------------
         // MARK: - Actions from other features
         
-      case .eq(.txButton):
-        state.txEqSelected.toggle()
-        state.eqState = EqFeature.State(hz63: 9,
-                                        hz125: -9,
-                                        txSelected: state.txEqSelected,
-                                        eqEnabled: true)
-        return .none
-
 //      case .cw(_):
 //        return .none
 
@@ -145,37 +130,22 @@ public struct RightSideFeature: ReducerProtocol {
 
 //      case .tx(_):
 //        return .none
-      case .eq(.eqEnabledButton):
         
+        // ----------------------------------------------------------------------------
+        // MARK: - Equalizer Actions
+        
+      case .eq(.rxButton):
+        state.txEqSelected = false
+        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: true)
         return .none
       
-      case .eq(.flatButton):
+      case .eq(.txButton):
+        state.txEqSelected = true
+        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: true)
         return .none
-      
-      case .eq(.hz63(let value)):
-        print("hz63 = \(value)")
-        return .none
-      
-      case .eq(.hz125(let value)):
-        print("hz125 = \(value)")
-        return .none
-      
-      case .eq(.hz250(_)):
-        return .none
-      
-      case .eq(.hz500(_)):
-        return .none
-      
-      case .eq(.hz1000(_)):
-        return .none
-      
-      case .eq(.hz2000(_)):
-        return .none
-      
-      case .eq(.hz4000(_)):
-        return .none
-      
-      case .eq(.hz8000(_)):
+
+      case .eq(_):
+        // all others ignored
         return .none
       }
     }
