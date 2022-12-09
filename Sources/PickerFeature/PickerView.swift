@@ -33,19 +33,48 @@ public struct PickerView: View {
           }
           Spacer()
         } else {
-          PickerBodyView(store: store)
+          PickerBodyView(viewStore: viewStore)
         }
         Spacer()
         Divider()
-        PickerFooterView(store: store)
+        PickerFooterView(viewStore: viewStore)
       }
     }
     .frame(minWidth: 600, minHeight: 250)
   }
 }
 
+struct PickerHeaderView: View {
+  let isGui: Bool
+  
+  var body: some View {
+    VStack {
+      Text("Select a \(isGui ? "RADIO" : "STATION")")
+        .font(.title)
+        .padding(.bottom, 10)
+      
+      Text("Click on a \(isGui ? "RADIO" : "STATION") in the list below")
+        .font(.title3)
+        .padding(.bottom, 10)
+      
+      HStack(spacing: 0) {
+        Group {
+          Text("Type")
+          Text("Name")
+          Text("Status")
+          Text("Station(s)")
+        }
+        .frame(width: 140, alignment: .leading)
+      }
+    }
+    .font(.title2)
+    .padding(.vertical, 10)
+    .padding(.horizontal)
+  }
+}
+
 public struct PickerBodyView: View {
-  let store: StoreOf<PickerFeature>
+  let viewStore: ViewStore<PickerFeature.State, PickerFeature.Action>
   
   func isSelected(_ selection: Pickable?, _ pickable: Pickable) -> Bool {
     
@@ -54,29 +83,59 @@ public struct PickerBodyView: View {
   
   public var body: some View {
     
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      ForEach(viewStore.pickables, id: \.id) { pickable in
-        ZStack {
-          HStack(spacing: 0) {
-            Group {
-              Text(pickable.packet.source.rawValue)
-              Text(pickable.packet.nickname)
-              Text(pickable.packet.status)
-              Text(pickable.station)
-            }
-            .font(.title3)
-            .frame(minWidth: 140, alignment: .leading)
-            .foregroundColor(pickable.isDefault ? .red : nil)
-            .onTapGesture {
-              viewStore.send(.selectionAction(pickable))
-            }
+    ForEach(viewStore.pickables, id: \.id) { pickable in
+      ZStack {
+        HStack(spacing: 0) {
+          Group {
+            Text(pickable.packet.source.rawValue)
+            Text(pickable.packet.nickname)
+            Text(pickable.packet.status)
+            Text(pickable.station)
           }
-          Rectangle().fill(isSelected(viewStore.selection, pickable) ? .gray : .clear).frame(height: 20).opacity(0.2)
-            .font(.title3)
-            .frame(minWidth: 140, alignment: .leading)
+          .font(.title3)
+          .frame(minWidth: 140, alignment: .leading)
+          .foregroundColor(pickable.isDefault ? .red : nil)
+          .onTapGesture {
+            viewStore.send(.selectionAction(pickable))
+          }
         }
+        Rectangle().fill(isSelected(viewStore.selection, pickable) ? .gray : .clear).frame(height: 20).opacity(0.2)
+          .font(.title3)
+          .frame(minWidth: 140, alignment: .leading)
       }
     }
+    .padding(.horizontal)
+  }
+}
+
+struct PickerFooterView: View {
+  let viewStore: ViewStore<PickerFeature.State, PickerFeature.Action>
+  
+  var body: some View {
+    
+    HStack(){
+      Button("Test") { viewStore.send(.testButton(viewStore.selection!)) }
+        .disabled(viewStore.selection == nil || viewStore.selection!.packet.source == PacketSource.local)
+      Circle()
+        .fill(viewStore.testResult ? Color.green : Color.red)
+        .frame(width: 20, height: 20)
+      
+      Spacer()
+      Button("Default") { viewStore.send(.defaultButton(viewStore.selection!)) }
+        .disabled(viewStore.selection == nil)
+        .keyboardShortcut(.cancelAction)
+      
+      Spacer()
+      Button("Cancel") { viewStore.send(.cancelButton) }
+        .keyboardShortcut(.cancelAction)
+      
+      Spacer()
+      Button("Connect") {
+        viewStore.send(.connectButton(viewStore.selection!)) }
+      .keyboardShortcut(.defaultAction)
+      .disabled(viewStore.selection == nil)
+    }
+    .padding(.vertical, 10)
     .padding(.horizontal)
   }
 }
@@ -86,35 +145,35 @@ public struct PickerBodyView: View {
 
 struct PickerView_Previews: PreviewProvider {
   static var previews: some View {
-
+    
     PickerView(store: Store(initialState: PickerFeature.State(pickables: IdentifiedArrayOf<Pickable>(), isGui: true),
                             reducer: PickerFeature())
     )
     .previewDisplayName("Picker Gui (empty)")
     
-//    PickerView(store: Store(initialState: PickerFeature.State(pickables: [
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "Available", serial: "1234-5678"),
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6300", status: "Available", serial: "1234-5678"),
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6700", status: "Available", serial: "1234-5678"),
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", serial: "1234-5678")
-//    ], isGui: true),
-//                            reducer: PickerFeature())
-//    )
-//    .previewDisplayName("Picker Gui")
+    //    PickerView(store: Store(initialState: PickerFeature.State(pickables: [
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "Available", serial: "1234-5678"),
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6300", status: "Available", serial: "1234-5678"),
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6700", status: "Available", serial: "1234-5678"),
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", serial: "1234-5678")
+    //    ], isGui: true),
+    //                            reducer: PickerFeature())
+    //    )
+    //    .previewDisplayName("Picker Gui")
     
     PickerView(store: Store(initialState: PickerFeature.State(pickables: IdentifiedArrayOf<Pickable>(), isGui: false),
                             reducer: PickerFeature())
     )
     .previewDisplayName("Picker non Gui (empty)")
     
-//    PickerView(store: Store(initialState: PickerState(pickables: [
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "iPad", serial: "1234-5678"),
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "Windows", serial: "1234-5678"),
-//      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", station: "Windows", serial: "1234-5678"),
-//    ],isGui: false),
-//                            reducer: pickerReducer,
-//                            environment: PickerEnvironment())
-//    )
-//    .previewDisplayName("Picker non Gui")
+    //    PickerView(store: Store(initialState: PickerState(pickables: [
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "iPad", serial: "1234-5678"),
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "Windows", serial: "1234-5678"),
+    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", station: "Windows", serial: "1234-5678"),
+    //    ],isGui: false),
+    //                            reducer: pickerReducer,
+    //                            environment: PickerEnvironment())
+    //    )
+    //    .previewDisplayName("Picker non Gui")
   }
 }

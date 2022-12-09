@@ -9,10 +9,10 @@ import ComposableArchitecture
 import Foundation
 
 import Objects
-//import CwView
+import CwFeature
 import EqFeature
 //import Ph1View
-//import Ph2View
+import Ph2Feature
 //import TxView
 
 public struct RightSideFeature: ReducerProtocol {
@@ -24,8 +24,8 @@ public struct RightSideFeature: ReducerProtocol {
     var rx: Bool
 //    var txState: TxFeature.State?
 //    var ph1State: Ph1Feature.State?
-//    var ph2State: Ph2Feature.State?
-//    var cwState: CwFeature.State?
+    var ph2State: Ph2Feature.State?
+    var cwState: CwFeature.State?
     var eqState: EqFeature.State?
     var height: CGFloat
     
@@ -34,8 +34,8 @@ public struct RightSideFeature: ReducerProtocol {
       rx: Bool = false,
 //      txState: TxFeature.State? = nil,
 //      ph1State: Ph1Feature.State? = nil,
-//      ph2State: Ph2Feature.State? = nil,
-//      cwState: CwVFeature.State? = nil,
+      ph2State: Ph2Feature.State? = nil,
+      cwState: CwFeature.State? = nil,
       eqState: EqFeature.State? = nil,
       height: CGFloat = 400
     )
@@ -44,8 +44,8 @@ public struct RightSideFeature: ReducerProtocol {
       self.rx = rx
 //      self.txState = txState
 //      self.ph1State = ph1State
-//      self.ph2State = ph2State
-//      self.cwState = cwState
+      self.ph2State = ph2State
+      self.cwState = cwState
       self.eqState = eqState
       self.height = height
     }
@@ -53,10 +53,10 @@ public struct RightSideFeature: ReducerProtocol {
   
   public enum Action: Equatable {
     // subview related
-//    case cw(CwFeature.Action)
+    case cw(CwFeature.Action)
     case eq(EqFeature.Action)
 //    case ph1(Ph1Feature.Action)
-//    case ph2(Ph2Feature.Action)
+    case ph2(Ph2Feature.Action)
 //    case tx(TxFeature.Action)
 
     // UI controls
@@ -72,16 +72,16 @@ public struct RightSideFeature: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .cwButton:
-//        if state.cwState == nil {
-//          state.cwState = CwView.State(transmit: Transmit.shared)
-//        } else {
-//          state.cwState = nil
-//        }
+        if state.cwState == nil {
+          state.cwState = CwFeature.State()
+        } else {
+          state.cwState = nil
+        }
         return .none
         
       case .eqButton:
         if state.eqState == nil {
-          state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: false)
+          state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue)
         } else {
           state.eqState = nil
         }
@@ -96,11 +96,11 @@ public struct RightSideFeature: ReducerProtocol {
         return .none
         
       case .ph2Button:
-//        if state.ph2State == nil {
-//          state.ph2State = Ph2View.State(transmit: Transmit.shared)
-//        } else {
-//          state.ph2State = nil
-//        }
+        if state.ph2State == nil {
+          state.ph2State = Ph2Feature.State()
+        } else {
+          state.ph2State = nil
+        }
         return .none
 
       case .rxButton:
@@ -119,14 +119,14 @@ public struct RightSideFeature: ReducerProtocol {
         // ----------------------------------------------------------------------------
         // MARK: - Actions from other features
         
-//      case .cw(_):
-//        return .none
+      case .cw(_):
+        return .none
 
 //      case .eq(_):
 //        return .none
       
-//      case .ph2(_):
-//        return .none
+      case .ph2(_):
+        return .none
 
 //      case .tx(_):
 //        return .none
@@ -136,12 +136,12 @@ public struct RightSideFeature: ReducerProtocol {
         
       case .eq(.rxButton):
         state.txEqSelected = false
-        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: true)
+        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue)
         return .none
       
       case .eq(.txButton):
         state.txEqSelected = true
-        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue, eqEnabled: true)
+        state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue)
         return .none
 
       case .eq(_):
@@ -150,18 +150,18 @@ public struct RightSideFeature: ReducerProtocol {
       }
     }
       // Reducers for other features
-//    .ifLet(\.cwState, action: /Action.cw) {
-//      CwView()
-//    }
+    .ifLet(\.cwState, action: /Action.cw) {
+      CwFeature()
+    }
     .ifLet(\.eqState, action: /Action.eq) {
       EqFeature()
     }
 //    .ifLet(\.ph1State, action: /Action.ph1) {
 //      Ph1View()
 //    }
-//    .ifLet(\.ph2State, action: /Action.ph2) {
-//      Ph2View()
-//    }
+    .ifLet(\.ph2State, action: /Action.ph2) {
+      Ph2Feature()
+    }
 //    .ifLet(\.txState, action: /Action.tx) {
 //      TxView()
 //    }

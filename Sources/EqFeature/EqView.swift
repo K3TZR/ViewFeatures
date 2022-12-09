@@ -48,8 +48,8 @@ public struct EqView: View {
             
             Group {
               Toggle("On", isOn: viewStore.binding(
-                get: \.eqEnabled ,
-                send: { .onButton($0) }))
+                get: {_ in apiModel.equalizers[id: viewStore.eqId]!.eqEnabled } ,
+                send: .onButton ))
               Toggle("Rx", isOn: viewStore.binding(
                 get: {_ in viewStore.eqId == EqType.rx.rawValue },
                 send: .rxButton ))
@@ -75,26 +75,22 @@ public struct EqView: View {
 private struct SliderView: View {
   let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
   @ObservedObject var equalizer: Equalizer
-
-//  @Dependency(\.apiModel) var apiModel
-
+  
   var body: some View {
-//    WithViewStore(self.store, observe: { $0 }) { viewStore in
-
-      VStack(spacing: 5) {
-        Group {
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz63)}, send: { .levelChange(.hz63, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz125)}, send: { .levelChange(.hz125, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz250)}, send: { .levelChange(.hz250, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz500)}, send: { .levelChange(.hz500, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz1000)}, send: { .levelChange(.hz1000, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz2000)}, send: { .levelChange(.hz2000, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz4000)}, send: { .levelChange(.hz4000, Int($0)) }), in: -10...10, step: 1)
-          Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz8000)}, send: { .levelChange(.hz8000, Int($0)) }), in: -10...10, step: 1)
-        }.frame(width: 160)
-      }
-      .rotationEffect(.degrees(-90), anchor: .center).offset(x: 30, y: 0)
-//    }
+    
+    VStack(spacing: 5) {
+      Group {
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz63)}, send: { .levelChange(.hz63, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz125)}, send: { .levelChange(.hz125, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz250)}, send: { .levelChange(.hz250, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz500)}, send: { .levelChange(.hz500, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz1000)}, send: { .levelChange(.hz1000, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz2000)}, send: { .levelChange(.hz2000, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz4000)}, send: { .levelChange(.hz4000, Int($0)) }), in: -10...10)
+        Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz8000)}, send: { .levelChange(.hz8000, Int($0)) }), in: -10...10)
+      }.frame(width: 160)
+    }
+    .rotationEffect(.degrees(-90), anchor: .center).offset(x: 30, y: 0)
   }
 }
 
@@ -102,16 +98,16 @@ private struct SliderView: View {
 // MARK: - Preview
 
 struct EqView_Previews: PreviewProvider {
+  
   static var previews: some View {
-    EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue, eqEnabled: true),
+    EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue),
       reducer: EqFeature())
     )
     .previewDisplayName("Rx Equalizer")
     
     EqView(store: Store(
       initialState: EqFeature.State(
-        eqId: EqType.tx.rawValue,
-        eqEnabled: true),
+        eqId: EqType.tx.rawValue),
       reducer: EqFeature())
     )
     .previewDisplayName("Tx Equalizer")

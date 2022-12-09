@@ -8,7 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-//import LevelIndicatorView
+import Objects
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -20,65 +20,15 @@ public struct Ph2View: View {
     self.store = store
   }
   
+  @Dependency(\.apiModel) var apiModel
+  
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading, spacing: 13) {
-//
-//        HStack(spacing: 10)  {
-//          VStack(alignment: .center, spacing: 15) {
-//            Group {
-//              Text("AM Carrier")
-//              Toggle(isOn: viewStore.binding(
-//                get: {_ in transmit.voxEnabled},
-//                send: .voxButton( transmit.voxEnabled ))) { Text("VOX") }
-//              Text("Vox Delay")
-//              Toggle(isOn: viewStore.binding(
-//                get: {_ in transmit.companderEnabled},
-//                send: .dexpButton( transmit.companderEnabled ))) { Text("DEXP") }
-//            }.toggleStyle(.button)
-//          }
-//
-//          VStack(spacing: 12) {
-//            Slider(value: viewStore.binding(get: {_ in Double(transmit.carrierLevel) }, send: { .levelChange(.amCarrierLevel, Int($0)) }), in: 0...100, step: 1)
-//            Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .levelChange(.voxLevel, Int($0)) }), in: 0...100, step: 1)
-//            Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .levelChange(.voxDelay, Int($0)) }), in: 0...100, step: 1)
-//            Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .levelChange(.companderLevel, Int($0)) }), in: 0...100, step: 1)
-//          }
-//        }
-//        VStack(alignment: .leading, spacing: 0) {
-//          HStack(spacing: 20) {
-//            Group {
-//              Text("Tx Filter")
-//              TextField("", value: viewStore.binding(
-//                get: {_ in  transmit.txFilterLow },
-//                send: { .lowCutChange($0) }), format: .number).multilineTextAlignment(.trailing)
-//              TextField("", value: viewStore.binding(
-//                get: {_ in  transmit.txFilterHigh },
-//                send: { .highCutChange($0) }), format: .number)
-//              .multilineTextAlignment(.trailing)
-//            }.frame(width: 70)
-//          }
-//          HStack(spacing: 20) {
-//            Group {
-//              Text("")
-//              Text("Low Cut")
-//              Text("High Cut")
-//            }
-//            .font(.footnote)
-//            .frame(width: 70)
-//          }
-//        }
-//        HStack(alignment: .center, spacing: 20) {
-//          Spacer()
-//          Image(systemName: transmit.micBiasEnabled ? "b.circle.fill" : "b.circle").font(.title).help("Mic Bias")
-//            .onTapGesture { viewStore.send(.micBiasButton(transmit.micBiasEnabled) ) }
-//          Image(systemName: transmit.micBoostEnabled ? "plus.circle.fill" : "plus.circle").font(.title).help("Mic Boost")
-//            .onTapGesture { viewStore.send(.micBoostButton(transmit.micBoostEnabled)) }
-//          Image(systemName: transmit.metInRxEnabled ? "m.circle.fill" : "m.circle").font(.title).help("Meter in Rx")
-//            .onTapGesture { viewStore.send(.meterInRxButton(transmit.metInRxEnabled)) }
-//          Spacer()
-//        }
-//        Divider().background(.blue)
+        ButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
+        TxFilterView(viewStore: viewStore, transmit: apiModel.transmit)
+        MicButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
+        Divider().background(.blue)
       }
       .frame(width: 260, height: 210)
       .padding(10)
@@ -86,11 +36,116 @@ public struct Ph2View: View {
   }
 }
 
+struct ButtonsView: View {
+  let viewStore: ViewStore<Ph2Feature.State, Ph2Feature.Action>
+  @ObservedObject var transmit: Transmit
+  
+  public var body: some View {
+    
+    HStack(spacing: 10)  {
+      VStack(alignment: .center, spacing: 15) {
+        Group {
+          Text("AM Carrier")
+          Toggle(isOn: viewStore.binding(
+            get: {_ in transmit.voxEnabled},
+            send: .voxButton )) { Text("VOX") }
+          Text("Vox Delay")
+          Toggle(isOn: viewStore.binding(
+            get: {_ in transmit.companderEnabled},
+            send: .dexpButton )) { Text("DEXP") }
+        }.toggleStyle(.button)
+      }
+      SlidersView(viewStore: viewStore, transmit: transmit)
+    }
+  }
+}
+
+struct SlidersView: View {
+  let viewStore: ViewStore<Ph2Feature.State, Ph2Feature.Action>
+  @ObservedObject var transmit: Transmit
+  
+  public var body: some View {
+    
+    VStack(spacing: 12) {
+      HStack(spacing: 10) {
+        Text("\(transmit.carrierLevel)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.carrierLevel) }, send: { .levelSlider(.amCarrierLevel, Int($0)) }), in: 0...100)
+      }
+      HStack(spacing: 10) {
+        Text("\(transmit.voxLevel)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .levelSlider(.voxLevel, Int($0)) }), in: 0...100)
+      }
+      HStack(spacing: 10) {
+        Text("\(transmit.voxDelay)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .levelSlider(.voxDelay, Int($0)) }), in: 0...100)
+      }
+      HStack(spacing: 10) {
+        Text("\(transmit.companderLevel)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .levelSlider(.companderLevel, Int($0)) }), in: 0...100)
+      }
+    }
+  }
+}
+
+struct TxFilterView: View {
+  let viewStore: ViewStore<Ph2Feature.State, Ph2Feature.Action>
+  @ObservedObject var transmit: Transmit
+  
+  public var body: some View {
+    
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(spacing: 20) {
+        Group {
+          Text("Tx Filter")
+          TextField("", value: viewStore.binding(
+            get: {_ in  transmit.txFilterLow },
+            send: { .txFilterLowCut($0) }), format: .number).multilineTextAlignment(.trailing)
+          TextField("", value: viewStore.binding(
+            get: {_ in  transmit.txFilterHigh },
+            send: { .txFilterHighCut($0) }), format: .number)
+          .multilineTextAlignment(.trailing)
+        }.frame(width: 70)
+      }
+    }
+  }
+}
+
+struct MicButtonsView: View {
+  let viewStore: ViewStore<Ph2Feature.State, Ph2Feature.Action>
+  @ObservedObject var transmit: Transmit
+  
+  public var body: some View {
+    
+    HStack(alignment: .center, spacing: 5) {
+      Image(systemName: transmit.micBiasEnabled ? "b.circle.fill" : "b.circle").font(.title).help("Mic Bias")
+        .help("            Bias")
+        .onTapGesture { viewStore.send(.micBiasButton) }
+      Image(systemName: transmit.micBoostEnabled ? "plus.circle.fill" : "plus.circle").font(.title).help("Mic Boost")
+        .help("            Boost")
+        .onTapGesture { viewStore.send(.micBoostButton) }
+      Image(systemName: transmit.metInRxEnabled ? "m.circle.fill" : "m.circle").font(.title).help("Meter in Rx")
+        .help("            Meter in Rx")
+        .onTapGesture { viewStore.send(.meterInRxButton) }
+      HStack(spacing: 20) {
+        Group {
+          Text("Low Cut")
+          Text("High Cut")
+        }
+        .font(.footnote)
+        .frame(width: 50)
+        .padding(.leading, 20)
+      }
+    }
+  }
+}
+
+
+
 // ----------------------------------------------------------------------------
 // MARK: - Preview
 
-//struct Ph2View_Previews: PreviewProvider {
-//  static var previews: some View {
-//    Ph2View(store: Store(initialState: Ph2Feature.State(transmit: Transmit.shared), reducer: Ph2Feature()), transmit: Transmit.shared)
-//  }
-//}
+struct Ph2View_Previews: PreviewProvider {
+  static var previews: some View {
+    Ph2View(store: Store(initialState: Ph2Feature.State(), reducer: Ph2Feature()))
+  }
+}

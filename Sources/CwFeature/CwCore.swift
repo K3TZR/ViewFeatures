@@ -11,23 +11,20 @@ import ComposableArchitecture
 import Shared
 
 public struct CwFeature: ReducerProtocol {
-
   public init() {}
   
-  public struct State: Equatable {
+  @Dependency(\.apiModel) var apiModel
 
-    public init(
-    )
-    {
-    }
+  public struct State: Equatable {
+    public init() {}
   }
   
   public enum Action: Equatable {
-    case breakinButton(Bool)
+    case breakinButton
     case delayLevel(Int)
-    case iambicButton(Bool)
+    case iambicButton
     case pitchChange(Int)
-    case sidetoneButton(Bool)
+    case sidetoneButton
     case sidetoneGain(Int)
     case sidetonePan(Int)
     case speedLevel(Int)
@@ -37,37 +34,45 @@ public struct CwFeature: ReducerProtocol {
     
     switch action {
 
-    case .breakinButton(let value):
-//      state.transmit.transmitSetProperty(.cwBreakInEnabled, value)
-      return .none
-      
-    case .delayLevel(let value):
-//      state.transmit.transmitSetProperty(.cwBreakInDelay, value)
-      return .none
+    case .breakinButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwBreakInEnabled)
+      }
 
-    case .iambicButton(let value):
-//      state.transmit.transmitSetProperty(.cwIambicEnabled, value)
-      return .none
+    case .delayLevel(let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwBreakInDelay, String(value))
+      }
+
+    case .iambicButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwIambicEnabled)
+      }
 
     case .pitchChange(let value):
-//      state.transmit.transmitSetProperty(.cwPitch, value)
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwPitch, String(value))
+      }
 
-    case .sidetoneButton(let value):
-//      state.transmit.transmitSetProperty(.cwSidetoneEnabled, value)
-      return .none
+    case .sidetoneButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwSidetoneEnabled)
+      }
 
     case .sidetoneGain(let value):
-//      state.transmit.transmitSetProperty(.cwMonitorGain, value)
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwMonitorGain, String(value))
+      }
 
     case .sidetonePan(let value):
-//      state.transmit.transmitSetProperty(.cwMonitorPan, value)
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwMonitorPan, String(value))
+      }
 
     case .speedLevel(let value):
-//      state.transmit.transmitSetProperty(.cwSpeed, value)
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.cwSpeed, String(value))
+      }
     }
   }
 }

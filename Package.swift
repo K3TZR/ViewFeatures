@@ -75,6 +75,7 @@ let package = Package(
 
     // Ph2Feature
     .target(name: "Ph2Feature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),

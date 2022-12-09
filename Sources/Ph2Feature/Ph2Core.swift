@@ -8,66 +8,71 @@
 import Foundation
 import ComposableArchitecture
 
+import Objects
 import Shared
 
 public struct Ph2Feature: ReducerProtocol {
-
   public init(){}
-  
-  public struct State: Equatable {
-    
-    public init
-    (
-    )
-    {
-    }
+
+  @Dependency(\.apiModel) var apiModel
+
+  public struct State: Equatable {    
+    public init() {}
   }
   
   public enum Action: Equatable {
-//    case micBiasButton(Bool)
-//    case dexpButton(Bool)
-//    case meterInRxButton(Bool)
-//    case micBoostButton(Bool)
-//    case voxButton(Bool)
-//    case levelChange(Transmit.Property, Int)
-//    case lowCutChange(Int)
-//    case highCutChange(Int)
+    case micBiasButton
+    case dexpButton
+    case meterInRxButton
+    case micBoostButton
+    case voxButton
+    case levelSlider(Transmit.Property, Int)
+    case txFilterLowCut(Int)
+    case txFilterHighCut(Int)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    
-//    switch action {
-//    case .micBiasButton(let value):
-//      state.transmit.transmitSetProperty(.micBiasEnabled, !value)
-//      return .none
-//
-//    case .dexpButton(let value):
-//      state.transmit.transmitSetProperty(.companderEnabled, !value)
-//      return .none
-//
-//    case .meterInRxButton(let value):
-//      state.transmit.transmitSetProperty(.metInRxEnabled, !value)
-//      return .none
-//
-//    case .micBoostButton(let value):
-//      state.transmit.transmitSetProperty(.micBoostEnabled, !value)
-//      return .none
-//
-//    case .voxButton(let value):
-//      state.transmit.transmitSetProperty(.voxEnabled, !value)
-//      return .none
-//
-//    case .levelChange(let type, let value):
-//      state.transmit.transmitSetProperty(type, value)
-//      return .none
-//
-//    case .lowCutChange(let value):
-//      state.transmit.transmitSetProperty(.txFilterLow, value)
-//      return .none
-//
-//    case .highCutChange(let value):
-//      state.transmit.transmitSetProperty(.txFilterHigh, value)
-//      return .none
-//    }
+    switch action {
+
+    case .micBiasButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micBiasEnabled)
+      }
+
+    case .dexpButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.companderEnabled)
+      }
+
+    case .meterInRxButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.metInRxEnabled)
+      }
+
+    case .micBoostButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micBoostEnabled)
+      }
+
+    case .voxButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.voxEnabled)
+      }
+
+    case .levelSlider(let type, let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(type, String(value))
+      }
+
+    case .txFilterLowCut(let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.txFilterLow, String(value))
+      }
+
+    case .txFilterHighCut(let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.txFilterHigh, String(value))
+      }
+    }
   }
 }
