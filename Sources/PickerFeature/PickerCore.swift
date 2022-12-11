@@ -15,18 +15,21 @@ public struct PickerFeature: ReducerProtocol {
   
   public struct State: Equatable {
     var pickables: IdentifiedArrayOf<Pickable>
+    public var defaultValue: DefaultValue?
     var isGui: Bool
     var selection: (Pickable)?
     public var testResult: Bool
 
     public init(
       pickables: IdentifiedArrayOf<Pickable>,
+      defaultValue: DefaultValue? = nil,
       isGui: Bool = true,
       selection: Pickable? = nil,
       testResult: Bool = false
     )
     {
       self.pickables = pickables
+      self.defaultValue = defaultValue
       self.isGui = isGui
       self.selection = selection
       self.testResult = testResult

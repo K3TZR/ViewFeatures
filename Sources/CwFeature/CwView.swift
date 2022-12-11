@@ -93,7 +93,7 @@ struct BottomButtonsView: View {
   
   public var body: some View {
     
-    HStack(spacing: 10) {
+    HStack(spacing: 5) {
       Group {
         Toggle("Breakin", isOn: viewStore.binding(
           get: {_ in transmit.cwBreakInEnabled },
@@ -103,9 +103,12 @@ struct BottomButtonsView: View {
           send: .iambicButton ))
       }.toggleStyle(.button).frame(width: 70)
       Text("Pitch")
-      TextField("", value: viewStore.binding(
+      Stepper(value: viewStore.binding(
         get: {_ in  transmit.cwPitch },
-        send: { .pitchChange($0) }), format: .number).multilineTextAlignment(.trailing)
+        send: { .pitchChange($0) }),
+              in: 100...6000,
+              step: 50) {
+        Text("\(transmit.cwPitch)").frame(width: 40, alignment: .trailing).border(.red) }
     }
   }
 }

@@ -24,7 +24,7 @@ let package = Package(
     .library(name: "TxFeature", targets: ["TxFeature"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/K3TZR/ApiFeatures.git", from: "1.0.1"),
+    .package(url: "https://github.com/K3TZR/ApiFeatures.git", from: "1.5.1"),
     .package(url: "https://github.com/K3TZR/SharedFeatures.git", from: "1.3.1"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "0.42.0"),
   ],

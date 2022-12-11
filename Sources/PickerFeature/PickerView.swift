@@ -81,6 +81,18 @@ public struct PickerBodyView: View {
     selection?.packet.id == pickable.packet.id && selection?.packet.source == pickable.packet.source && selection?.station == pickable.station
   }
   
+  func isDefault(_ pickable: Pickable, _ isGui: Bool, _ defaultValue: DefaultValue?) -> Bool {
+    guard defaultValue != nil else { return false }
+    if isGui {
+      return pickable.packet.serial == defaultValue!.serial &&
+      pickable.packet.source.rawValue == defaultValue!.source
+    } else {
+      return pickable.packet.serial == defaultValue!.serial &&
+      pickable.packet.source.rawValue == defaultValue!.source &&
+      pickable.station == defaultValue!.station
+    }
+  }
+  
   public var body: some View {
     
     ForEach(viewStore.pickables, id: \.id) { pickable in
@@ -94,7 +106,7 @@ public struct PickerBodyView: View {
           }
           .font(.title3)
           .frame(minWidth: 140, alignment: .leading)
-          .foregroundColor(pickable.isDefault ? .red : nil)
+          .foregroundColor(isDefault(pickable, viewStore.isGui, viewStore.defaultValue) ? .red : nil)
           .onTapGesture {
             viewStore.send(.selectionAction(pickable))
           }

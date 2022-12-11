@@ -95,16 +95,34 @@ struct TxFilterView: View {
     
     VStack(alignment: .leading, spacing: 0) {
       HStack(spacing: 20) {
+//        Group {
+//          Text("Tx Filter")
+//          TextField("", value: viewStore.binding(
+//            get: {_ in  transmit.txFilterLow },
+//            send: { .txFilterLowCut($0) }), format: .number).multilineTextAlignment(.trailing)
+//          TextField("", value: viewStore.binding(
+//            get: {_ in  transmit.txFilterHigh },
+//            send: { .txFilterHighCut($0) }), format: .number)
+//          .multilineTextAlignment(.trailing)
+//        }.frame(width: 70)
+
         Group {
           Text("Tx Filter")
-          TextField("", value: viewStore.binding(
+          Stepper(value: viewStore.binding(
             get: {_ in  transmit.txFilterLow },
-            send: { .txFilterLowCut($0) }), format: .number).multilineTextAlignment(.trailing)
-          TextField("", value: viewStore.binding(
+            send: { .txFilterLowCut($0) }),
+                  in:  0...(transmit.txFilterHigh - 50),
+                  step: 50) {
+            Text("\(transmit.txFilterLow)").frame(width: 40, alignment: .trailing).border(.red) }
+          
+          Stepper(value: viewStore.binding(
             get: {_ in  transmit.txFilterHigh },
-            send: { .txFilterHighCut($0) }), format: .number)
-          .multilineTextAlignment(.trailing)
-        }.frame(width: 70)
+            send: { .txFilterHighCut($0) }),
+                  in: (transmit.txFilterLow + 50)...10_000,
+                  step: 50) {
+            Text("\(transmit.txFilterHigh)").frame(width: 40, alignment: .trailing).border(.red) }
+        }.frame(width: 80)
+
       }
     }
   }

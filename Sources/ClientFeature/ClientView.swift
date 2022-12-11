@@ -58,7 +58,7 @@ public struct ClientView: View {
 struct ClientView_Previews: PreviewProvider {
   static var previews: some View {
     ClientView(store: Store(
-      initialState: ClientFeature.State(selection: Pickable(packet: Packet(), station: "", isDefault: false),
+      initialState: ClientFeature.State(selection: Pickable(packet: Packet(), station: ""),
                                         stations: ["iPad"],
                                         handles: [1,] ),
       reducer: ClientFeature())
@@ -66,7 +66,7 @@ struct ClientView_Previews: PreviewProvider {
     .previewDisplayName("Gui connect (disconnect not required)")
 
     ClientView(store: Store(
-      initialState: ClientFeature.State(selection: Pickable(packet: Packet(), station: "", isDefault: false),
+      initialState: ClientFeature.State(selection: Pickable(packet: Packet(), station: ""),
                                         stations: ["iPad", "Windows"],
                                         handles: [1,2] ),
       reducer: ClientFeature())
