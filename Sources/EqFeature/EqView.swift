@@ -17,57 +17,89 @@ import Shared
 public struct EqView: View {
   let store: StoreOf<EqFeature>
   
+  @Dependency(\.apiModel) var apiModel
+
   public init(store: StoreOf<EqFeature>) {
     self.store = store
   }
   
-  @Dependency(\.apiModel) var apiModel
-  
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       
-      VStack(alignment: .leading, spacing: 0) {
-        HStack(spacing: 0) {
-          Button( action: { viewStore.send(.flatButton) }) { Text("Flat") }
-          Text("").frame(width: 15)
-          Group {
-            Text("63")
-            Text("125")
-            Text("250")
-            Text("500")
-            Text("1k")
-            Text("2k")
-            Text("4k")
-            Text("8k")
-          }.frame(width:25)
-        }
-        
-        HStack(spacing: 0) {
-          VStack(spacing: 20) {
-            Text("+10 Db")
-            
-            Group {
-              Toggle("On", isOn: viewStore.binding(
-                get: {_ in apiModel.equalizers[id: viewStore.eqId]!.eqEnabled } ,
-                send: .onButton ))
-              Toggle("Rx", isOn: viewStore.binding(
-                get: {_ in viewStore.eqId == EqType.rx.rawValue },
-                send: .rxButton ))
-              Toggle("Tx", isOn: viewStore.binding(
-                get: {_ in viewStore.eqId == EqType.tx.rawValue },
-                send: .txButton ))
-            }.toggleStyle(.button)
-            
-            Text("-10 Db")
-          }
-          
-          SliderView(viewStore: viewStore, equalizer: apiModel.equalizers[id: viewStore.eqId]!)
-        }
-        Spacer()
+      VStack(alignment: .center, spacing: 10) {
+        TopView(viewStore: viewStore, apiModel: apiModel)
         Divider().background(.blue)
       }
-      .frame(width: 260, height: 210)
-      .padding(10)
+    }
+  }
+}
+
+private struct TopView: View {
+  let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
+  @ObservedObject var apiModel: ApiModel
+  
+  var body: some View {
+    if apiModel.equalizers.count != 2 {
+      Text("Not connected")
+    } else {
+      VStack(alignment: .leading, spacing: 10) {
+        HeadingView(viewStore: viewStore)
+        
+        HStack(spacing: 20) {
+          ButtonView(viewStore: viewStore, apiModel: apiModel)
+          SliderView(viewStore: viewStore, equalizer: apiModel.equalizers[id: viewStore.eqId]!)
+        }
+        Divider().foregroundColor(.blue)
+      }
+      .padding(.horizontal, 10)
+    }
+  }
+}
+
+private struct HeadingView: View {
+  let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
+
+  var body: some View {
+
+    HStack(spacing: 0) {
+      Button( action: { viewStore.send(.flatButton) }) { Text("Flat") }
+      Text("").frame(width: 15)
+      Group {
+        Text("63")
+        Text("125")
+        Text("250")
+        Text("500")
+        Text("1k")
+        Text("2k")
+        Text("4k")
+        Text("8k")
+      }.frame(width:25)
+    }
+  }
+}
+
+private struct ButtonView: View {
+  let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
+  @ObservedObject var apiModel: ApiModel
+  
+  var body: some View {
+
+    VStack(alignment: .center, spacing: 25) {
+      Text("+10 Db")
+//      Spacer()
+      Group {
+        Toggle("On", isOn: viewStore.binding(
+          get: {_ in apiModel.equalizers[id: viewStore.eqId]!.eqEnabled } ,
+          send: .onButton ))
+        Toggle("Rx", isOn: viewStore.binding(
+          get: {_ in viewStore.eqId == EqType.rx.rawValue },
+          send: .rxButton ))
+        Toggle("Tx", isOn: viewStore.binding(
+          get: {_ in viewStore.eqId == EqType.tx.rawValue },
+          send: .txButton ))
+      }.toggleStyle(.button)
+//      Spacer()
+      Text("-10 Db")
     }
   }
 }
@@ -78,7 +110,7 @@ private struct SliderView: View {
   
   var body: some View {
     
-    VStack(spacing: 5) {
+    VStack(alignment: .center, spacing: 5) {
       Group {
         Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz63)}, send: { .levelChange(.hz63, Int($0)) }), in: -10...10)
         Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz125)}, send: { .levelChange(.hz125, Int($0)) }), in: -10...10)
@@ -88,9 +120,10 @@ private struct SliderView: View {
         Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz2000)}, send: { .levelChange(.hz2000, Int($0)) }), in: -10...10)
         Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz4000)}, send: { .levelChange(.hz4000, Int($0)) }), in: -10...10)
         Slider(value: viewStore.binding(get: {_ in Double(equalizer.hz8000)}, send: { .levelChange(.hz8000, Int($0)) }), in: -10...10)
-      }.frame(width: 160)
+      }
+      .frame(width: 180)
     }
-    .rotationEffect(.degrees(-90), anchor: .center).offset(x: 30, y: 0)
+    .rotationEffect(.degrees(-90), anchor: .center)
   }
 }
 
@@ -100,16 +133,18 @@ private struct SliderView: View {
 struct EqView_Previews: PreviewProvider {
   
   static var previews: some View {
-    EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue),
-      reducer: EqFeature())
-    )
-    .previewDisplayName("Rx Equalizer")
-    
-    EqView(store: Store(
-      initialState: EqFeature.State(
-        eqId: EqType.tx.rawValue),
-      reducer: EqFeature())
-    )
-    .previewDisplayName("Tx Equalizer")
+
+    Group {
+      EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue),
+                          reducer: EqFeature()))
+      .frame(width: 275, height: 250)
+      .previewDisplayName("Rx Equalizer")
+      
+      
+      EqView(store: Store(initialState: EqFeature.State(eqId: EqType.tx.rawValue),
+                          reducer: EqFeature()))
+      .frame(width: 275, height: 250)
+      .previewDisplayName("Tx Equalizer")
+    }
   }
 }

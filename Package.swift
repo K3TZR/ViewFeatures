@@ -69,6 +69,8 @@ let package = Package(
 
     // Ph1Feature
     .target(name: "Ph1Feature", dependencies: [
+      "LevelIndicatorView",
+      .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
@@ -104,6 +106,8 @@ let package = Package(
     
     // TxFeature
     .target(name: "TxFeature", dependencies: [
+      "LevelIndicatorView",
+      .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),

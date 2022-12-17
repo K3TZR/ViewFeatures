@@ -48,6 +48,7 @@ public struct EqFeature: ReducerProtocol {
         await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz4000)
         await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz8000)
       }
+
       
     case .rxButton:
       return .none

@@ -8,8 +8,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-import Objects
 import LevelIndicatorView
+import Objects
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -25,16 +25,18 @@ public struct CwView: View {
   
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading, spacing: 10)  {
+      VStack(alignment: .center, spacing: 10)  {
         LevelIndicatorView(level: 0.25, type: .alc)
           .padding(.bottom, 10)
         
-        ButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
+        HStack {
+          ButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
+          SlidersView(viewStore: viewStore, transmit: apiModel.transmit)
+        }
         BottomButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
         Divider().background(.blue)
       }
-      .frame(width: 260, height: 210)
-      .padding(10)
+      .frame(width: 275)
     }
   }
 }
@@ -45,18 +47,17 @@ struct ButtonsView: View {
   
   public var body: some View {
     
-    HStack {
       VStack(alignment: .center, spacing: 13){
         Group {
           Text("Delay")
           Text("Speed")
-          Toggle("Sidetone", isOn: viewStore.binding(
+          Toggle(isOn: viewStore.binding(
             get: {_ in transmit.cwSidetoneEnabled },
-            send: .sidetoneButton )).toggleStyle(.button)
-          Text("Pan").frame(width: 70)
-        }.frame(width: 70)
-      }
-      SlidersView(viewStore: viewStore, transmit: transmit)
+            send: .sidetoneButton )) {Text("Sidetone").frame(width: 55)}
+          .toggleStyle(.button)
+          Text("Pan")
+        }
+        .frame(width: 80)
     }
   }
 }
@@ -81,8 +82,8 @@ struct SlidersView: View {
         Slider(value: viewStore.binding(get: {_ in Double(transmit.cwBreakInDelay) }, send: { .delayLevel( Int($0)) }), in: 0...2000)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.cwSpeed )}, send: { .speedLevel( Int($0)) }), in: 0...100)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorGain) }, send: { .sidetoneGain( Int($0)) }), in: 0...100)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorPan) }, send: { .sidetonePan( Int($0)) }), in: 0...100 ).frame(width: 120)
-      }.frame(width: 120)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorPan) }, send: { .sidetonePan( Int($0)) }), in: 0...100 )
+      }
     }
   }
 }
@@ -93,22 +94,24 @@ struct BottomButtonsView: View {
   
   public var body: some View {
     
-    HStack(spacing: 5) {
+    HStack(spacing: 15) {
       Group {
-        Toggle("Breakin", isOn: viewStore.binding(
+        Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwBreakInEnabled },
-          send: .breakinButton ))
+          send: .breakinButton )) {Text("BreakIn").frame(width: 55)}
         Toggle("Iambic", isOn: viewStore.binding(
           get: {_ in transmit.cwIambicEnabled },
           send: .iambicButton ))
-      }.toggleStyle(.button).frame(width: 70)
+      }
+      .toggleStyle(.button)
+      
       Text("Pitch")
       Stepper(value: viewStore.binding(
         get: {_ in  transmit.cwPitch },
         send: { .pitchChange($0) }),
               in: 100...6000,
               step: 50) {
-        Text("\(transmit.cwPitch)").frame(width: 40, alignment: .trailing).border(.red) }
+        Text("\(transmit.cwPitch)").frame(width: 40, alignment: .trailing).background(Color.secondary) }
     }
   }
 }
@@ -119,5 +122,6 @@ struct BottomButtonsView: View {
 struct CwView_Previews: PreviewProvider {
   static var previews: some View {
     CwView(store: Store(initialState: CwFeature.State(), reducer: CwFeature()))
+      .frame(width: 275, height: 210)
   }
 }

@@ -8,7 +8,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-//import LevelIndicatorView
+import LevelIndicatorView
+import Objects
 
 // ----------------------------------------------------------------------------
 // MARK: - View
@@ -20,87 +21,138 @@ public struct Ph1View: View {
     self.store = store
   }
 
-  @State var micValue: CGFloat = -20.0
-  @State var compressionValue: CGFloat = -15.0
-  @State var selectedMicProfile = "Profile 1"
-  @State var micProfiles = ["Profile 1", "Profile 2", "Profile 3"]
-  @State var selectedMicSource = "Mic"
-  @State var micSources = ["Mic", "Mac", "Dax"]
-  @State var micSetting: CGFloat = 0.0
-  @State var compressionSetting: CGFloat = 0.0
-  @State var monSetting: CGFloat = 0.0
+  @Dependency(\.apiModel) var apiModel
   
-  @State var acc = true
-  @State var dax = false
-  @State var proc = false
-  @State var mon = false
+  public var body: some View {
+    
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      VStack(alignment: .leading, spacing: 20) {
+        LevelsView()
+        ProfileView(viewStore: viewStore, micProfile: apiModel.profiles[id: "mic"]!)
+        MicSelectionView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
+        ProcView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
+        MonView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
+        Divider().background(.blue)
+      }
+    }
+  }
+}
+
+private struct LevelsView: View {
+  
+  public var body: some View {
+    VStack(alignment: .center, spacing: 5)  {
+      LevelIndicatorView(level: -20.0, type: .micLevel)
+      LevelIndicatorView(level: -15.0, type: .compression)
+    }
+  }
+}
+
+private struct ProfileView: View {
+  let viewStore: ViewStore<Ph1Feature.State, Ph1Feature.Action>
+  @ObservedObject var micProfile: Profile
+  
+  public var body: some View {
+    HStack(spacing: 25) {
+      Picker("", selection: viewStore.binding(
+        get: {_ in  micProfile.current },
+        send: { .micProfilePicker($0) })) {
+        ForEach(micProfile.list, id: \.self) {
+          Text($0)
+        }
+      }
+      .labelsHidden()
+      .pickerStyle(.menu)
+      .frame(width: 210, alignment: .leading)
+      
+      Button("Save", action: {})
+        .font(.footnote)
+        .buttonStyle(BorderlessButtonStyle())
+        .foregroundColor(.blue)
+    }
+  }
+}
+
+private struct MicSelectionView: View {
+  let viewStore: ViewStore<Ph1Feature.State, Ph1Feature.Action>
+  @ObservedObject var transmit: Transmit
+  @ObservedObject var radio: Radio
 
   public var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading, spacing: 10) {
-        //        VStack(alignment: .leading, spacing: 5)  {
-        //          LevelIndicatorView(level: micValue, type: .micLevel)
-        //          LevelIndicatorView(level: compressionValue, type: .compression)
-        //          //      Spacer()
-        //        }
-        Rectangle().frame(height: 30)
-        Rectangle().frame(height: 30)
-        
-        HStack(spacing: 30) {
-          Picker("", selection: $selectedMicProfile) {
-            ForEach(micProfiles, id: \.self) {
+
+    VStack {
+      HStack(spacing: 10) {
+        Picker("", selection: viewStore.binding(
+          get: {_ in  transmit.micSelection },
+          send: { .micSelectionPicker($0) })) {
+            ForEach(radio.micList, id: \.self) {
               Text($0)
             }
           }
           .labelsHidden()
           .pickerStyle(.menu)
-          .frame(width: 185, alignment: .leading)
-          Button("Save", action: {}).font(.system(size: 10)).buttonStyle(BorderlessButtonStyle()).foregroundColor(.blue)
-        }
+          .frame(width: 60, alignment: .leading)
         
-        HStack(spacing: 10) {
-          Group {
-            VStack(alignment: .leading, spacing: 5) {
-              Picker("", selection: $selectedMicSource) {
-                ForEach(micSources, id: \.self) {
-                  Text($0)
-                }
-              }
-              .labelsHidden()
-              .pickerStyle(.menu)
-              Group {
-                Text("-").hidden().font(.footnote)
-                Toggle("Proc", isOn: $proc)
-                Toggle("Mon", isOn: $mon)
-              }.toggleStyle(.button)
-            }
-          }.frame(width: 60)
-          
-          VStack {
-            HStack(spacing: 0) {
-              VStack {
-                Slider(value: $micSetting, in: -1...1)
-                HStack(spacing: 35) {
-                  Text("NOR")
-                  Text("DX")
-                  Text("DX+")
-                }.font(.footnote)
-                Slider(value: $compressionSetting, in: -1...1)
-              }.frame(width: 130)
-              
-              VStack {
-                Toggle("ACC", isOn: $acc)
-                Text("-").hidden().font(.footnote)
-                Toggle("DAX", isOn: $dax)
-              }.toggleStyle(.button).frame(width: 60)
-            }
-            Slider(value: $monSetting, in: -1...1)
-          }
-        }
-        Divider().background(.blue)
+        Slider(value: viewStore.binding(
+          get: {_ in  Double(transmit.micLevel) },
+          send: { .micLevelSlider(Int($0)) }), in: -1...1)
+        
+        Toggle(isOn: viewStore.binding(
+          get: {_ in  transmit.micAccEnabled },
+          send: { .micAccButton($0) })) { Text("ACC").frame(width: 30)}
+        .toggleStyle(.button)
       }
-      .frame(width: 260, height: 210)
-      .padding(10)
+      
+      HStack(spacing: 35) {
+        Text("NOR")
+        Text("DX")
+        Text("DX+")
+      }.font(.footnote)
+    }
+  }
+}
+
+private struct ProcView: View {
+  let viewStore: ViewStore<Ph1Feature.State, Ph1Feature.Action>
+  @ObservedObject var transmit: Transmit
+  @ObservedObject var radio: Radio
+  
+  public var body: some View {
+    
+    HStack(spacing: 10) {
+      Toggle(isOn: viewStore.binding(
+        get: {_ in  transmit.speechProcessorEnabled },
+        send: { .speechProcessorButton($0) })) { Text("PROC").frame(width: 40)}
+      .toggleStyle(.button)
+
+      Slider(value: viewStore.binding(
+        get: {_ in  Double(transmit.speechProcessorLevel) },
+        send: { .speechProcessorLevelSlider(Int($0)) }), in: -1...1)
+      
+      Toggle(isOn: viewStore.binding(
+        get: {_ in  transmit.daxEnabled },
+        send: { .daxButton($0) })) { Text("DAX").frame(width: 30)}
+      .toggleStyle(.button)
+    }
+  }
+}
+
+private struct MonView: View {
+  let viewStore: ViewStore<Ph1Feature.State, Ph1Feature.Action>
+  @ObservedObject var transmit: Transmit
+  @ObservedObject var radio: Radio
+  
+  public var body: some View {
+    
+    HStack(spacing: 10) {
+      Toggle(isOn: viewStore.binding(
+        get: {_ in  transmit.txMonitorEnabled },
+        send: { .txMonitorButton($0) })) { Text("Mon").frame(width: 40)}
+      .toggleStyle(.button)
+
+      Slider(value: viewStore.binding(
+        get: {_ in  Double(transmit.ssbMonitorGain) },
+        send: { .ssbMonitorGainSlider(Int($0)) }), in: -1...1)
     }
   }
 }
@@ -111,5 +163,7 @@ public struct Ph1View: View {
 struct Ph1View_Previews: PreviewProvider {
     static var previews: some View {
       Ph1View(store: Store(initialState: Ph1Feature.State(), reducer: Ph1Feature()))
+        .frame(width: 275, height: 250)
+        .previewDisplayName("Ph1")
     }
 }

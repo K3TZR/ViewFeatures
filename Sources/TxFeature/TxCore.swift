@@ -23,20 +23,23 @@ public struct TxFeature: ReducerProtocol {
   }
   
   public enum Action: Equatable {
-    case atuButton
-    case memButton
+    case atuEnabledButton
+    case memoriesEnabledButton
     case moxButton
     case tuneButton
+    case rfPowerSlider(Int)
+    case tunePowerSlider(Int)
+    case txProfilePicker(String)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
-    case .atuButton:
-      print("atuButton")
+    case .atuEnabledButton:
+      print("atuEnabledButton")
       return .none
 
-    case .memButton:
+    case .memoriesEnabledButton:
       print("memButton")
       return .none
 
@@ -47,6 +50,19 @@ public struct TxFeature: ReducerProtocol {
     case .tuneButton:
       print("tuneButton")
       return .none
+      
+    case .rfPowerSlider(let level):
+      print("rfPowerSlider = \(level)")
+      return .none
+
+    case .tunePowerSlider(let level):
+      print("tunePowerSlider = \(level)")
+      return .none
+      
+    case .txProfilePicker(let profile):
+      print("txProfilePicker = \(profile)")
+      return .none
+
     }
   }
 }
