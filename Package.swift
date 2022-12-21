@@ -7,12 +7,17 @@ let package = Package(
   name: "ViewFeatures",
   platforms: [
     .iOS(.v15),
-    .macOS(.v12),
+    .macOS(.v13),
   ],
   products: [
+    .library(name: "AntennaFeature", targets: ["AntennaFeature"]),
+    .library(name: "BandFeature", targets: ["BandFeature"]),
     .library(name: "ClientFeature", targets: ["ClientFeature"]),
     .library(name: "CwFeature", targets: ["CwFeature"]),
+    .library(name: "DaxFeature", targets: ["DaxFeature"]),
+    .library(name: "DisplayFeature", targets: ["DisplayFeature"]),
     .library(name: "EqFeature", targets: ["EqFeature"]),
+    .library(name: "LeftSideFeature", targets: ["LeftSideFeature"]),
     .library(name: "LevelIndicatorView", targets: ["LevelIndicatorView"]),
     .library(name: "LoginFeature", targets: ["LoginFeature"]),
     .library(name: "LogFeature", targets: ["LogFeature"]),
@@ -21,6 +26,8 @@ let package = Package(
     .library(name: "PickerFeature", targets: ["PickerFeature"]),
     .library(name: "ProgressFeature", targets: ["ProgressFeature"]),
     .library(name: "RightSideFeature", targets: ["RightSideFeature"]),
+    .library(name: "RxFeature", targets: ["RxFeature"]),
+    .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
     .library(name: "TxFeature", targets: ["TxFeature"]),
   ],
   dependencies: [
@@ -30,6 +37,19 @@ let package = Package(
   ],
   targets: [
     // --------------- Modules ---------------
+    // AntennaFeature
+    .target(name: "AntennaFeature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // BandFeature
+    .target(name: "BandFeature", dependencies: [
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
     // ClientFeature
     .target(name: "ClientFeature", dependencies: [
       .product(name: "Shared", package: "SharedFeatures"),
@@ -44,10 +64,34 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     
+    // DaxFeature
+    .target(name: "DaxFeature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // DisplayFeature
+    .target(name: "DisplayFeature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
     // EqFeature
     .target(name: "EqFeature", dependencies: [
       .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // LeftSideFeature
+    .target(name: "LeftSideFeature",  dependencies: [
+      "AntennaFeature",
+      "BandFeature",
+      "DaxFeature",
+      "DisplayFeature",
+      .product(name: "Objects", package: "ApiFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     
@@ -93,14 +137,30 @@ let package = Package(
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     
-    // RightSideView
+    // RightSideFeature
     .target(name: "RightSideFeature",  dependencies: [
       "CwFeature",
       "EqFeature",
       "Ph1Feature",
       "Ph2Feature",
+      "RxFeature",
       "TxFeature",
       .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+    
+    // RxFeature
+    .target(name: "RxFeature", dependencies: [
+      "LevelIndicatorView",
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
+      .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+    ]),
+
+    // SettingsFeature
+    .target(name: "SettingsFeature", dependencies: [
+      .product(name: "Objects", package: "ApiFeatures"),
+      .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
     

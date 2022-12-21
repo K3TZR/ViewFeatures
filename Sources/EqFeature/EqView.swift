@@ -26,32 +26,14 @@ public struct EqView: View {
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       
-      VStack(alignment: .center, spacing: 10) {
-        TopView(viewStore: viewStore, apiModel: apiModel)
-        Divider().background(.blue)
-      }
-    }
-  }
-}
-
-private struct TopView: View {
-  let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
-  @ObservedObject var apiModel: ApiModel
-  
-  var body: some View {
-    if apiModel.equalizers.count != 2 {
-      Text("Not connected")
-    } else {
       VStack(alignment: .leading, spacing: 10) {
         HeadingView(viewStore: viewStore)
-        
         HStack(spacing: 20) {
-          ButtonView(viewStore: viewStore, apiModel: apiModel)
-          SliderView(viewStore: viewStore, equalizer: apiModel.equalizers[id: viewStore.eqId]!)
+          ButtonView(viewStore: viewStore, equalizer: apiModel.equalizers[id: viewStore.eqId] ?? Equalizer("dummy"))
+          SliderView(viewStore: viewStore, equalizer: apiModel.equalizers[id: viewStore.eqId] ?? Equalizer("dummy"))
         }
-        Divider().foregroundColor(.blue)
+        Divider().background(.blue)
       }
-      .padding(.horizontal, 10)
     }
   }
 }
@@ -80,16 +62,15 @@ private struct HeadingView: View {
 
 private struct ButtonView: View {
   let viewStore: ViewStore<EqFeature.State, EqFeature.Action>
-  @ObservedObject var apiModel: ApiModel
+  @ObservedObject var equalizer: Equalizer
   
   var body: some View {
 
     VStack(alignment: .center, spacing: 25) {
       Text("+10 Db")
-//      Spacer()
       Group {
         Toggle("On", isOn: viewStore.binding(
-          get: {_ in apiModel.equalizers[id: viewStore.eqId]!.eqEnabled } ,
+          get: {_ in equalizer.eqEnabled } ,
           send: .onButton ))
         Toggle("Rx", isOn: viewStore.binding(
           get: {_ in viewStore.eqId == EqType.rx.rawValue },
@@ -98,7 +79,6 @@ private struct ButtonView: View {
           get: {_ in viewStore.eqId == EqType.tx.rawValue },
           send: .txButton ))
       }.toggleStyle(.button)
-//      Spacer()
       Text("-10 Db")
     }
   }
@@ -137,13 +117,13 @@ struct EqView_Previews: PreviewProvider {
     Group {
       EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue),
                           reducer: EqFeature()))
-      .frame(width: 275, height: 250)
+//      .frame(width: 275, height: 250)
       .previewDisplayName("Rx Equalizer")
       
       
       EqView(store: Store(initialState: EqFeature.State(eqId: EqType.tx.rawValue),
                           reducer: EqFeature()))
-      .frame(width: 275, height: 250)
+//      .frame(width: 275, height: 250)
       .previewDisplayName("Tx Equalizer")
     }
   }

@@ -10,29 +10,35 @@ import SwiftUI
 
 import LevelIndicatorView
 import Objects
+import Shared
 
 // ----------------------------------------------------------------------------
 // MARK: - View
 
 public struct Ph1View: View {
   let store: StoreOf<Ph1Feature>
-
-  public init(store: StoreOf<Ph1Feature>) {
+  @ObservedObject var apiModel: ApiModel
+  
+  public init(store: StoreOf<Ph1Feature>, apiModel: ApiModel) {
     self.store = store
+    self.apiModel = apiModel
   }
-
-  @Dependency(\.apiModel) var apiModel
   
   public var body: some View {
     
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading, spacing: 20) {
-        LevelsView()
-        ProfileView(viewStore: viewStore, micProfile: apiModel.profiles[id: "mic"]!)
-        MicSelectionView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
-        ProcView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
-        MonView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio!)
-        Divider().background(.blue)
+      VStack {
+        VStack(alignment: .leading, spacing: 10) {
+          LevelsView()
+          ProfileView(viewStore: viewStore, micProfile: apiModel.profiles[id: "mic"] ?? Profile("empty"))
+          MicSelectionView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()))
+          ProcView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()))
+          MonView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()))
+        }
+        VStack(alignment: .center, spacing: 10) {
+          AccView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()))
+          Divider().background(.blue)
+        }
       }
     }
   }
@@ -79,35 +85,23 @@ private struct MicSelectionView: View {
   @ObservedObject var radio: Radio
 
   public var body: some View {
-
-    VStack {
-      HStack(spacing: 10) {
-        Picker("", selection: viewStore.binding(
-          get: {_ in  transmit.micSelection },
-          send: { .micSelectionPicker($0) })) {
-            ForEach(radio.micList, id: \.self) {
-              Text($0)
-            }
+    
+    HStack(spacing: 10) {
+      Picker("", selection: viewStore.binding(
+        get: {_ in  transmit.micSelection },
+        send: { .micSelectionPicker($0) })) {
+          ForEach(radio.micList, id: \.self) {
+            Text($0)
           }
-          .labelsHidden()
-          .pickerStyle(.menu)
-          .frame(width: 60, alignment: .leading)
-        
-        Slider(value: viewStore.binding(
-          get: {_ in  Double(transmit.micLevel) },
-          send: { .micLevelSlider(Int($0)) }), in: -1...1)
-        
-        Toggle(isOn: viewStore.binding(
-          get: {_ in  transmit.micAccEnabled },
-          send: { .micAccButton($0) })) { Text("ACC").frame(width: 30)}
-        .toggleStyle(.button)
-      }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .frame(width: 70, alignment: .leading)
       
-      HStack(spacing: 35) {
-        Text("NOR")
-        Text("DX")
-        Text("DX+")
-      }.font(.footnote)
+      HStack(spacing: 20) {
+        Text("\(transmit.micLevel)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.micLevel) }, send: { .micLevelSlider( Int($0)) }), in: 0...100)
+      }
     }
   }
 }
@@ -118,21 +112,27 @@ private struct ProcView: View {
   @ObservedObject var radio: Radio
   
   public var body: some View {
-    
-    HStack(spacing: 10) {
-      Toggle(isOn: viewStore.binding(
-        get: {_ in  transmit.speechProcessorEnabled },
-        send: { .speechProcessorButton($0) })) { Text("PROC").frame(width: 40)}
-      .toggleStyle(.button)
-
-      Slider(value: viewStore.binding(
-        get: {_ in  Double(transmit.speechProcessorLevel) },
-        send: { .speechProcessorLevelSlider(Int($0)) }), in: -1...1)
+    VStack(spacing: 0) {
       
-      Toggle(isOn: viewStore.binding(
-        get: {_ in  transmit.daxEnabled },
-        send: { .daxButton($0) })) { Text("DAX").frame(width: 30)}
-      .toggleStyle(.button)
+      HStack(spacing: 40) {
+        Text("NOR")
+        Text("DX")
+        Text("DX+")
+      }
+      .padding(.leading, 125)
+      .font(.footnote)
+      
+      HStack(spacing: 10) {
+        Toggle(isOn: viewStore.binding(
+          get: {_ in  transmit.speechProcessorEnabled },
+          send: { .speechProcessorButton($0) })) { Text("PROC").frame(width: 55)}
+          .toggleStyle(.button)
+        
+        HStack(spacing: 20) {
+          Text("\(transmit.speechProcessorLevel)").frame(width: 25, alignment: .trailing)
+          Slider(value: viewStore.binding(get: {_ in Double(transmit.speechProcessorLevel) }, send: { .speechProcessorLevelSlider( Int($0)) }), in: 0...100)
+        }
+      }
     }
   }
 }
@@ -147,12 +147,34 @@ private struct MonView: View {
     HStack(spacing: 10) {
       Toggle(isOn: viewStore.binding(
         get: {_ in  transmit.txMonitorEnabled },
-        send: { .txMonitorButton($0) })) { Text("Mon").frame(width: 40)}
-      .toggleStyle(.button)
+        send: { .txMonitorButton($0) })) { Text("MON").frame(width: 55)}
+        .toggleStyle(.button)
+      
+      HStack(spacing: 20) {
+        Text("\(transmit.ssbMonitorGain)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.ssbMonitorGain) }, send: { .ssbMonitorGainSlider( Int($0)) }), in: 0...100)
+      }
+    }
+  }
+}
 
-      Slider(value: viewStore.binding(
-        get: {_ in  Double(transmit.ssbMonitorGain) },
-        send: { .ssbMonitorGainSlider(Int($0)) }), in: -1...1)
+private struct AccView: View {
+  let viewStore: ViewStore<Ph1Feature.State, Ph1Feature.Action>
+  @ObservedObject var transmit: Transmit
+  @ObservedObject var radio: Radio
+  
+  public var body: some View {
+    
+    HStack(alignment: .center, spacing: 40) {
+      Toggle(isOn: viewStore.binding(
+        get: {_ in  transmit.micAccEnabled },
+        send: { .micAccButton($0) })) { Text("ACC").frame(width: 40)}
+        .toggleStyle(.button)
+      
+      Toggle(isOn: viewStore.binding(
+        get: {_ in  transmit.daxEnabled },
+        send: { .daxButton($0) })) { Text("DAX").frame(width: 40)}
+        .toggleStyle(.button)
     }
   }
 }
@@ -162,7 +184,7 @@ private struct MonView: View {
 
 struct Ph1View_Previews: PreviewProvider {
     static var previews: some View {
-      Ph1View(store: Store(initialState: Ph1Feature.State(), reducer: Ph1Feature()))
+      Ph1View(store: Store(initialState: Ph1Feature.State(), reducer: Ph1Feature()), apiModel: ApiModel())
         .frame(width: 275, height: 250)
         .previewDisplayName("Ph1")
     }

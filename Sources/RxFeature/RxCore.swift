@@ -1,6 +1,6 @@
 //
-//  TxCore.swift
-//
+//  RxCore.swift
+//  
 //
 //  Created by Douglas Adams on 11/15/22.
 //
@@ -10,7 +10,7 @@ import ComposableArchitecture
 
 import Shared
 
-public struct TxFeature: ReducerProtocol {
+public struct RxFeature: ReducerProtocol {
 
   public init() {}
   

@@ -25,17 +25,15 @@ public struct Ph2View: View {
   public var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       
-      VStack(alignment: .center, spacing: 13) {
+      VStack(alignment: .leading, spacing: 10) {
         HStack {
           ButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
           SlidersView(viewStore: viewStore, transmit: apiModel.transmit)
         }
         TxFilterView(viewStore: viewStore, transmit: apiModel.transmit)
         MicButtonsView(viewStore: viewStore, transmit: apiModel.transmit)
-//        Spacer()
         Divider().background(.blue)
       }
-      .padding(.horizontal, 10)
     }
   }
 }
@@ -46,16 +44,16 @@ struct ButtonsView: View {
   
   public var body: some View {
     
-    VStack(alignment: .center, spacing: 15) {
+    VStack(alignment: .leading, spacing: 10) {
       Group {
         Text("AM Carrier")
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.voxEnabled},
-          send: .voxButton )) { Text("VOX") }
+          send: .voxButton )) { Text("VOX").frame(width: 55) }
         Text("Vox Delay")
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.companderEnabled},
-          send: .dexpButton )) { Text("DEXP") }
+          send: .dexpButton )) { Text("DEXP").frame(width: 55) }
       }.toggleStyle(.button)
     }
   }
@@ -67,24 +65,25 @@ struct SlidersView: View {
   
   public var body: some View {
     
-    VStack(spacing: 12) {
-      HStack(spacing: 10) {
+    VStack(spacing: 8) {
+      HStack(spacing: 20) {
         Text("\(transmit.carrierLevel)").frame(width: 25, alignment: .trailing)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.carrierLevel) }, send: { .levelSlider(.amCarrierLevel, Int($0)) }), in: 0...100)
       }
-      HStack(spacing: 10) {
+      HStack(spacing: 20) {
         Text("\(transmit.voxLevel)").frame(width: 25, alignment: .trailing)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .levelSlider(.voxLevel, Int($0)) }), in: 0...100)
       }
-      HStack(spacing: 10) {
+      HStack(spacing: 20) {
         Text("\(transmit.voxDelay)").frame(width: 25, alignment: .trailing)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .levelSlider(.voxDelay, Int($0)) }), in: 0...100)
       }
-      HStack(spacing: 10) {
+      HStack(spacing: 20) {
         Text("\(transmit.companderLevel)").frame(width: 25, alignment: .trailing)
         Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .levelSlider(.companderLevel, Int($0)) }), in: 0...100)
       }
     }
+//    .frame(width: 180)
   }
 }
 
@@ -95,25 +94,32 @@ struct TxFilterView: View {
   public var body: some View {
     
     VStack(alignment: .leading, spacing: 0) {
-      HStack(spacing: 20) {
+      HStack(spacing: 40) {
         Group {
           Text("Tx Filter")
           Stepper(value: viewStore.binding(
             get: {_ in  transmit.txFilterLow },
             send: { .txFilterLowCut($0) }),
-                  in:  0...(transmit.txFilterHigh - 50),
+                  in:  0...transmit.txFilterHigh,
                   step: 50) {
-            Text("\(transmit.txFilterLow)").frame(width: 40, alignment: .trailing).border(.red) }
+            Text("\(transmit.txFilterLow)").frame(width: 40, alignment: .trailing) }
           
           Stepper(value: viewStore.binding(
             get: {_ in  transmit.txFilterHigh },
             send: { .txFilterHighCut($0) }),
-                  in: (transmit.txFilterLow + 50)...10_000,
+                  in: 0...10_000,
                   step: 50) {
-            Text("\(transmit.txFilterHigh)").frame(width: 40, alignment: .trailing).border(.red) }
+            Text("\(transmit.txFilterHigh)").frame(width: 40, alignment: .trailing) }
         }
-        .frame(width: 80)
       }
+      HStack(spacing: 60) {
+        Group {
+          Text("Low Cut")
+          Text("High Cut")
+        }
+        .font(.footnote)
+      }
+      .padding(.leading, 90)
     }
   }
 }
@@ -123,25 +129,19 @@ struct MicButtonsView: View {
   @ObservedObject var transmit: Transmit
   
   public var body: some View {
-    
-    HStack(alignment: .center, spacing: 15) {
-      Image(systemName: transmit.micBiasEnabled ? "b.circle.fill" : "b.circle").font(.title).help("Mic Bias")
-        .help("            Bias")
-        .onTapGesture { viewStore.send(.micBiasButton) }
-      Image(systemName: transmit.micBoostEnabled ? "plus.circle.fill" : "plus.circle").font(.title).help("Mic Boost")
-        .help("            Boost")
-        .onTapGesture { viewStore.send(.micBoostButton) }
-      Image(systemName: transmit.metInRxEnabled ? "m.circle.fill" : "m.circle").font(.title).help("Meter in Rx")
-        .help("            Meter in Rx")
-        .onTapGesture { viewStore.send(.meterInRxButton) }
-      HStack(spacing: 20) {
-        Group {
-          Text("Low Cut")
-          Text("High Cut")
-        }
-        .font(.footnote)
-        .frame(width: 50)
+    HStack(spacing: 15) {
+      Group {
+        Toggle(isOn: viewStore.binding(
+          get: {_ in transmit.voxEnabled},
+          send: .voxButton )) { Text("Bias").frame(width: 55) }
+        Toggle(isOn: viewStore.binding(
+          get: {_ in transmit.voxEnabled},
+          send: .voxButton )) { Text("Boost").frame(width: 55) }
+        Toggle(isOn: viewStore.binding(
+          get: {_ in transmit.voxEnabled},
+          send: .voxButton )) { Text("Meter in Rx").frame(width: 70) }
       }
+      .toggleStyle(.button)
     }
   }
 }
@@ -152,6 +152,6 @@ struct MicButtonsView: View {
 struct Ph2View_Previews: PreviewProvider {
   static var previews: some View {
     Ph2View(store: Store(initialState: Ph2Feature.State(), reducer: Ph2Feature()))
-      .frame(width: 275, height: 210)
+      .frame(width: 275)
   }
 }
