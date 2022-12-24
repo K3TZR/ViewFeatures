@@ -109,13 +109,13 @@ private struct AtuStatusView: View {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in atu.enabled},
-          send: .atuEnabledButton )) { Text("ATU").frame(width: 40) }
+          send: { .atuEnabledButton($0) } )) { Text("ATU").frame(width: 40) }
         Toggle(isOn: viewStore.binding(
           get: {_ in atu.memoriesEnabled},
-          send: .memoriesEnabledButton )) { Text("MEM").frame(width: 40) }
+          send: { .memoriesEnabledButton($0) })) { Text("MEM").frame(width: 40) }
       }.toggleStyle(.button)
       
-      Text(atu.status).frame(width: 100)
+      Text(atu.status.rawValue).frame(width: 100)
         .border(.secondary)
     }
   }
@@ -131,10 +131,10 @@ private struct ButtonsView: View {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.tune},
-          send: .tuneButton )) { Text("TUNE").frame(width: 40) }
+          send: { .tuneButton($0) } )) { Text("TUNE").frame(width: 40) }
         Toggle(isOn: viewStore.binding(
           get: {_ in radio.mox},
-          send: .moxButton )) { Text("MOX").frame(width: 40) }
+          send: { .moxButton($0) } )) { Text("MOX").frame(width: 40) }
       }
       .toggleStyle(.button)
     }

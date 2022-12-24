@@ -68,21 +68,21 @@ struct SlidersView: View {
   public var body: some View {
     
     VStack(spacing: 8) {
-      HStack(spacing: 20) {
-        Text("\(transmit.cwBreakInDelay)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwBreakInDelay) }, send: { .delayLevel( Int($0)) }), in: 0...2_000)
+      HStack(spacing: 10) {
+        Text("\(transmit.cwBreakInDelay)").frame(width: 35, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwBreakInDelay) }, send: { .delayLevel( Int($0)) }), in: 30...2_000)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwSpeed)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .speedLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwSpeed) }, send: { .speedLevel( Int($0)) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwMonitorGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .sidetoneGain( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorGain) }, send: { .sidetoneGain( Int($0)) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwMonitorPan)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .sidetonePan( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorPan) }, send: { .sidetonePan( Int($0)) }), in: 0...100)
       }
     }
 //    .frame(width: 180)
@@ -95,14 +95,14 @@ struct BottomButtonsView: View {
   
   public var body: some View {
     
-    HStack(spacing: 15) {
+    HStack(spacing: 10) {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwBreakInEnabled },
           send: .breakinButton )) {Text("BreakIn").frame(width: 55)}
-        Toggle("Iambic", isOn: viewStore.binding(
+        Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwIambicEnabled },
-          send: .iambicButton ))
+          send: .iambicButton )){Text("Iambic").frame(width: 45)}
       }
       .toggleStyle(.button)
       
@@ -123,6 +123,6 @@ struct BottomButtonsView: View {
 struct CwView_Previews: PreviewProvider {
   static var previews: some View {
     CwView(store: Store(initialState: CwFeature.State(), reducer: CwFeature()))
-//      .frame(width: 275, height: 210)
+      .frame(width: 275, height: 210)
   }
 }

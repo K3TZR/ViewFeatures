@@ -132,14 +132,14 @@ struct MicButtonsView: View {
     HStack(spacing: 15) {
       Group {
         Toggle(isOn: viewStore.binding(
-          get: {_ in transmit.voxEnabled},
-          send: .voxButton )) { Text("Bias").frame(width: 55) }
+          get: {_ in transmit.micBiasEnabled},
+          send: .micBiasButton )) { Text("Bias").frame(width: 55) }
         Toggle(isOn: viewStore.binding(
-          get: {_ in transmit.voxEnabled},
-          send: .voxButton )) { Text("Boost").frame(width: 55) }
+          get: {_ in transmit.micBoostEnabled},
+          send: .micBoostButton )) { Text("Boost").frame(width: 55) }
         Toggle(isOn: viewStore.binding(
-          get: {_ in transmit.voxEnabled},
-          send: .voxButton )) { Text("Meter in Rx").frame(width: 70) }
+          get: {_ in transmit.meterInRxEnabled},
+          send: .meterInRxButton )) { Text("Meter in Rx").frame(width: 70) }
       }
       .toggleStyle(.button)
     }

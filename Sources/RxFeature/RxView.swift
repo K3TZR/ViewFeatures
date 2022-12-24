@@ -93,7 +93,7 @@ private struct ProfileView: View {
         .buttonStyle(BorderlessButtonStyle())
         .foregroundColor(.blue)
       
-      Text(atu.status).frame(width: 110)
+      Text(atu.status.rawValue).frame(width: 110)
         .border(.secondary)
     }
   }

@@ -14,6 +14,8 @@ public struct TxFeature: ReducerProtocol {
 
   public init() {}
   
+  @Dependency(\.apiModel) var apiModel
+  
   public struct State: Equatable {
 
     public init(
@@ -23,10 +25,10 @@ public struct TxFeature: ReducerProtocol {
   }
   
   public enum Action: Equatable {
-    case atuEnabledButton
-    case memoriesEnabledButton
-    case moxButton
-    case tuneButton
+    case atuEnabledButton(Bool)
+    case memoriesEnabledButton(Bool)
+    case moxButton(Bool)
+    case tuneButton(Bool)
     case rfPowerSlider(Int)
     case tunePowerSlider(Int)
     case txProfilePicker(String)
@@ -35,34 +37,41 @@ public struct TxFeature: ReducerProtocol {
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
-    case .atuEnabledButton:
-      print("atuEnabledButton")
+    case .atuEnabledButton(let state):
+//      return .run { _ in
+//        await apiModel.transmit.parseAndSend(.atuEnabled, state.as1or0)
+//      }
       return .none
 
-    case .memoriesEnabledButton:
-      print("memButton")
-      return .none
+    case .memoriesEnabledButton(let state):
+      return .run { _ in
+        await apiModel.transmit.sendAtu("memories_enabled", state.as1or0)
+      }
 
-    case .moxButton:
-      print("moxButton")
-      return .none
+    case .moxButton(let state):
+      return .run { _ in
+        await apiModel.transmit.sendMox(state)
+      }
 
-    case .tuneButton:
-      print("tuneButton")
-      return .none
-      
+    case .tuneButton(let state):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.tune, state.as1or0)
+      }
+
     case .rfPowerSlider(let level):
-      print("rfPowerSlider = \(level)")
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.rfPower, String(level))
+      }
 
     case .tunePowerSlider(let level):
-      print("tunePowerSlider = \(level)")
-      return .none
-      
-    case .txProfilePicker(let profile):
-      print("txProfilePicker = \(profile)")
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.tunePower, String(level))
+      }
 
+    case .txProfilePicker(let selection):
+      return .run { _ in
+        await apiModel.profiles[id: "tx"]?.parseAndSend(.current, selection)
+      }
     }
   }
 }

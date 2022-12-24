@@ -14,6 +14,8 @@ public struct Ph1Feature: ReducerProtocol {
 
   public init() {}
   
+  @Dependency(\.apiModel) var apiModel
+  
   public struct State: Equatable {
 
     public init(
@@ -23,72 +25,70 @@ public struct Ph1Feature: ReducerProtocol {
   }
   
   public enum Action: Equatable {
+    case daxButton(Bool)
+    case micAccButton(Bool)
+    case micLevelSlider(Int)
     case micProfilePicker(String)
     case micSelectionPicker(String)
-    case micLevelSlider(Int)
-    case micAccButton(Bool)
-    case speechProcessorLevelSlider(Int)
     case speechProcessorButton(Bool)
-    case daxButton(Bool)
-    case txMonitorButton(Bool)
+    case speechProcessorLevelSlider(Int)
     case ssbMonitorGainSlider(Int)
+    case ssbMonitorPanSlider(Int)
+    case txMonitorButton(Bool)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    
     switch action {
-    case .micProfilePicker(let name):
-      print("micProfile = \(name)")
-      return .none
-      
-    case .micSelectionPicker(let name):
-      print("micSelection = \(name)")
-      return .none
-
-    case .micAccButton(let enabled):
-      print("micAccButton = \(enabled)")
-      return .none
-
-    case .speechProcessorLevelSlider(let level):
-      print("speechProcessorLevelSlider = \(level)")
-      return .none
-
-    case .micLevelSlider(let level):
-      print("micLevelSlider = \(level)")
-      return .none
 
     case .daxButton(let enabled):
-      print("daxButton = \(enabled)")
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.daxEnabled, enabled.as1or0)
+      }
+
+    case .micAccButton(let enabled):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micAccEnabled, enabled.as1or0)
+      }
+
+    case .micLevelSlider(let level):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micLevel, String(level))
+      }
+
+    case .micSelectionPicker(let selection):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micSelection, selection)
+      }
+
+    case .micProfilePicker(let selection):
+      return .run { _ in
+        await apiModel.profiles[id: "mic"]?.parseAndSend(.current, selection)
+      }
 
     case .speechProcessorButton(let enabled):
-      print("speechProcessorButton = \(enabled)")
-      return .none
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.speechProcessorEnabled, enabled.as1or0)
+      }
+
+    case .speechProcessorLevelSlider(let level):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.speechProcessorLevel, String(level))
+      }
+
+    case .ssbMonitorGainSlider(let gain):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.ssbMonitorGain, String(gain))
+      }
+
+    case .ssbMonitorPanSlider(let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.ssbMonitorPan, String(value))
+      }
 
     case .txMonitorButton(let enabled):
-      print("txMonitorButton = \(enabled)")
-      return .none
-
-    case .ssbMonitorGainSlider(let level):
-      print("ssbMonitorGainSlider = \(level)")
-      return .none
-      
-     //    case .levelChange(let type, let value):
-      //      Equalizer.setEqProperty(state.rxSelected ? "rxsc" : "txsc", type, value)
-      //      return .none
-      //
-      //    case .rxButton:
-      //      state.rxSelected.toggle()
-      //      state.txSelected = !state.rxSelected
-      //      print("rxSelected = \(state.rxSelected)")
-      //      return .none
-      //
-      //    case .txButton:
-      //      state.txSelected .toggle()
-      //      state.rxSelected = !state.txSelected
-      //      print("txSelected = \(state.txSelected)")
-      //      return .none
-      //    }
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.txMonitorEnabled, enabled.as1or0)
+      }
     }
   }
 }

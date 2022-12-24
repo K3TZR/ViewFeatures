@@ -23,8 +23,6 @@ public struct RightSideView: View {
   let store: StoreOf<RightSideFeature>
   @ObservedObject var apiModel: ApiModel
   
-  @Environment(\.dismiss) var dismiss
-  
   public init(store: StoreOf<RightSideFeature>, apiModel: ApiModel) {
     self.store = store
     self.apiModel = apiModel

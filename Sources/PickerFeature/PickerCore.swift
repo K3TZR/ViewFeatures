@@ -7,28 +7,26 @@
 import Foundation
 import ComposableArchitecture
 
+import Listener
 import Shared
 
 public struct PickerFeature: ReducerProtocol {
 
   public init() {}
-  
+    
   public struct State: Equatable {
-    var pickables: IdentifiedArrayOf<Pickable>
     public var defaultValue: DefaultValue?
     var isGui: Bool
     var selection: (Pickable)?
     public var testResult: Bool
 
     public init(
-      pickables: IdentifiedArrayOf<Pickable>,
       defaultValue: DefaultValue? = nil,
       isGui: Bool = true,
       selection: Pickable? = nil,
       testResult: Bool = false
     )
     {
-      self.pickables = pickables
       self.defaultValue = defaultValue
       self.isGui = isGui
       self.selection = selection
@@ -45,7 +43,9 @@ public struct PickerFeature: ReducerProtocol {
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    
     switch action {
+    
     case .selectionAction(let selection):
       if state.selection == selection {
         state.selection = nil

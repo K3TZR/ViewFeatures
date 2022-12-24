@@ -117,13 +117,13 @@ struct EqView_Previews: PreviewProvider {
     Group {
       EqView(store: Store(initialState: EqFeature.State(eqId: EqType.rx.rawValue),
                           reducer: EqFeature()))
-//      .frame(width: 275, height: 250)
+      .frame(width: 275, height: 250)
       .previewDisplayName("Rx Equalizer")
       
       
       EqView(store: Store(initialState: EqFeature.State(eqId: EqType.tx.rawValue),
                           reducer: EqFeature()))
-//      .frame(width: 275, height: 250)
+      .frame(width: 275, height: 250)
       .previewDisplayName("Tx Equalizer")
     }
   }

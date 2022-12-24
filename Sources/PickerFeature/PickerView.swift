@@ -7,6 +7,7 @@
 import SwiftUI
 import ComposableArchitecture
 
+import Listener
 import Shared
 
 // ----------------------------------------------------------------------------
@@ -14,6 +15,8 @@ import Shared
 
 public struct PickerView: View {
   let store: StoreOf<PickerFeature>
+
+  @Dependency(\.listener) var listener
   
   public init(store: StoreOf<PickerFeature>) {
     self.store = store
@@ -24,17 +27,8 @@ public struct PickerView: View {
       VStack(alignment: .leading) {
         PickerHeaderView(isGui: viewStore.isGui)
         Divider()
-        if viewStore.pickables.count == 0 {
-          Spacer()
-          HStack {
-            Spacer()
-            Text("----------  NO  \(viewStore.isGui ? "Radio" : "Station")s  FOUND  ----------").foregroundColor(.red)
-            Spacer()
-          }
-          Spacer()
-        } else {
-          PickerBodyView(viewStore: viewStore)
-        }
+        PickerBodyView(viewStore: viewStore, listener: listener)
+        
         Spacer()
         Divider()
         PickerFooterView(viewStore: viewStore)
@@ -75,7 +69,42 @@ struct PickerHeaderView: View {
 
 public struct PickerBodyView: View {
   let viewStore: ViewStore<PickerFeature.State, PickerFeature.Action>
+  @ObservedObject var listener: Listener
   
+  public var body: some View {
+    if viewStore.isGui {
+      if listener.pickableRadios.count == 0 {
+        Spacer()
+        HStack {
+          Spacer()
+          Text("----------  NO Radios FOUND  ----------").foregroundColor(.red)
+          Spacer()
+        }
+        Spacer()
+      } else {
+        PickerItemView(viewStore: viewStore, pickables: listener.pickableRadios)
+      }
+
+    } else {
+      if listener.pickableStations.count == 0 {
+        Spacer()
+        HStack {
+          Spacer()
+          Text("----------  NO Stations FOUND  ----------").foregroundColor(.red)
+          Spacer()
+        }
+        Spacer()
+      } else {
+        PickerItemView(viewStore: viewStore, pickables: listener.pickableStations)
+      }
+    }
+  }
+}
+
+public struct PickerItemView: View {
+  let viewStore: ViewStore<PickerFeature.State, PickerFeature.Action>
+  let pickables: IdentifiedArrayOf<Pickable>
+    
   func isSelected(_ selection: Pickable?, _ pickable: Pickable) -> Bool {
     
     selection?.packet.id == pickable.packet.id && selection?.packet.source == pickable.packet.source && selection?.station == pickable.station
@@ -95,7 +124,7 @@ public struct PickerBodyView: View {
   
   public var body: some View {
     
-    ForEach(viewStore.pickables, id: \.id) { pickable in
+    ForEach(pickables, id: \.id) { pickable in
       ZStack {
         HStack(spacing: 0) {
           Group {
@@ -158,34 +187,15 @@ struct PickerFooterView: View {
 struct PickerView_Previews: PreviewProvider {
   static var previews: some View {
     
-    PickerView(store: Store(initialState: PickerFeature.State(pickables: IdentifiedArrayOf<Pickable>(), isGui: true),
+    PickerView(store: Store(initialState: PickerFeature.State(isGui: true),
                             reducer: PickerFeature())
     )
-    .previewDisplayName("Picker Gui (empty)")
+    .previewDisplayName("Picker Gui")
     
-    //    PickerView(store: Store(initialState: PickerFeature.State(pickables: [
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "Available", serial: "1234-5678"),
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6300", status: "Available", serial: "1234-5678"),
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6700", status: "Available", serial: "1234-5678"),
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", serial: "1234-5678")
-    //    ], isGui: true),
-    //                            reducer: PickerFeature())
-    //    )
-    //    .previewDisplayName("Picker Gui")
-    
-    PickerView(store: Store(initialState: PickerFeature.State(pickables: IdentifiedArrayOf<Pickable>(), isGui: false),
+    PickerView(store: Store(initialState: PickerFeature.State(isGui: false),
                             reducer: PickerFeature())
     )
-    .previewDisplayName("Picker non Gui (empty)")
+    .previewDisplayName("Picker nonGui")
     
-    //    PickerView(store: Store(initialState: PickerState(pickables: [
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "iPad", serial: "1234-5678"),
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Dougs 6500", status: "InUse", station: "Windows", serial: "1234-5678"),
-    //      Pickable(id: UUID(), packetId: UUID(), source: PacketSource.local.rawValue, nickname: "Petes 6500", status: "Available", station: "Windows", serial: "1234-5678"),
-    //    ],isGui: false),
-    //                            reducer: pickerReducer,
-    //                            environment: PickerEnvironment())
-    //    )
-    //    .previewDisplayName("Picker non Gui")
   }
 }

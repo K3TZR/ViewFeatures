@@ -46,7 +46,7 @@ public struct Ph2Feature: ReducerProtocol {
 
     case .meterInRxButton:
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.metInRxEnabled)
+        await apiModel.transmit.parseAndSend(.meterInRxEnabled)
       }
 
     case .micBoostButton:

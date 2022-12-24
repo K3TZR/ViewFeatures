@@ -128,6 +128,7 @@ let package = Package(
 
     // PickerFeature
     .target(name: "PickerFeature", dependencies: [
+      .product(name: "Listener", package: "ApiFeatures"),
       .product(name: "Shared", package: "SharedFeatures"),
       .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
     ]),
