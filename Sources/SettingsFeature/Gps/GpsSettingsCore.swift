@@ -1,8 +1,8 @@
 //
-//  SettingsCore.swift
+//  GpsSettingsCore.swift
 //  
 //
-//  Created by Douglas Adams on 12/21/22.
+//  Created by Douglas Adams on 12/31/22.
 //
 
 import Foundation
@@ -11,7 +11,7 @@ import ComposableArchitecture
 import Objects
 import Shared
 
-public struct SettingsFeature: ReducerProtocol {
+public struct GpsSettingsFeature: ReducerProtocol {
   
   public init() {}
   

@@ -28,7 +28,7 @@ public struct Ph1Feature: ReducerProtocol {
     case daxButton(Bool)
     case micAccButton(Bool)
     case micLevelSlider(Int)
-    case micProfilePicker(String)
+    case micProfilePicker(UUID)
     case micSelectionPicker(String)
     case speechProcessorButton(Bool)
     case speechProcessorLevelSlider(Int)
@@ -60,11 +60,12 @@ public struct Ph1Feature: ReducerProtocol {
         await apiModel.transmit.parseAndSend(.micSelection, selection)
       }
 
-    case .micProfilePicker(let selection):
-      return .run { _ in
-        await apiModel.profiles[id: "mic"]?.parseAndSend(.current, selection)
-      }
-
+    case .micProfilePicker(let id):
+//      return .run { _ in
+//        await apiModel.profiles[id: "mic"]?.parseAndSend(.current, selection)
+//      }
+      return .none
+      
     case .speechProcessorButton(let enabled):
       return .run { _ in
         await apiModel.transmit.parseAndSend(.speechProcessorEnabled, enabled.as1or0)

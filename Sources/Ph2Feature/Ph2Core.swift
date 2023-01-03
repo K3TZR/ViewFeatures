@@ -34,29 +34,9 @@ public struct Ph2Feature: ReducerProtocol {
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
 
-    case .micBiasButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBiasEnabled)
-      }
-
     case .dexpButton:
       return .run { _ in
         await apiModel.transmit.parseAndSend(.companderEnabled)
-      }
-
-    case .meterInRxButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.meterInRxEnabled)
-      }
-
-    case .micBoostButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBoostEnabled)
-      }
-
-    case .voxButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.voxEnabled)
       }
 
     case .levelSlider(let type, let value):
@@ -64,14 +44,34 @@ public struct Ph2Feature: ReducerProtocol {
         await apiModel.transmit.parseAndSend(type, String(value))
       }
 
-    case .txFilterLowCut(let value):
+    case .meterInRxButton:
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.txFilterLow, String(value))
+        await apiModel.transmit.parseAndSend(.meterInRxEnabled)
+      }
+
+    case .micBiasButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micBiasEnabled)
+      }
+
+    case .micBoostButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.micBoostEnabled)
       }
 
     case .txFilterHighCut(let value):
       return .run { _ in
         await apiModel.transmit.parseAndSend(.txFilterHigh, String(value))
+      }
+
+    case .txFilterLowCut(let value):
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.txFilterLow, String(value))
+      }
+
+    case .voxButton:
+      return .run { _ in
+        await apiModel.transmit.parseAndSend(.voxEnabled)
       }
     }
   }

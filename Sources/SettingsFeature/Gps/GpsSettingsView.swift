@@ -9,9 +9,7 @@ import SwiftUI
 
 struct GpsSettingsView: View {
     var body: some View {
-        Text("GPS View not implemented")
-        .frame(width: 600, height: 400)
-        .padding()
+        Text("GPS View not implemented").font(.title).foregroundColor(.red)
     }
 }
 
@@ -19,7 +17,7 @@ struct GpsSettingsView: View {
 struct GpsSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         GpsSettingsView()
-        .frame(width: 600, height: 400)
+        .frame(width: 600, height: 350)
         .padding()
     }
 }

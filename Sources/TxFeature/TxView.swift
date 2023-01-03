@@ -31,7 +31,7 @@ public struct TxView: View {
           AtuStatusView(viewStore: viewStore, atu: apiModel.atu)
         }
         VStack(alignment: .center, spacing: 10) {
-          ButtonsView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()))
+          ButtonsView(viewStore: viewStore, transmit: apiModel.transmit, radio: apiModel.radio ?? Radio(Packet()), atu: apiModel.atu)
           Divider().background(.blue)
         }
       }
@@ -82,10 +82,10 @@ private struct ProfileView: View {
   public var body: some View {
     HStack(spacing: 25) {
       Picker("", selection: viewStore.binding(
-        get: {_ in  txProfile.current },
+        get: {_ in  txProfile.current.id },
         send: { .txProfilePicker($0) })) {
-        ForEach(txProfile.list, id: \.self) {
-          Text($0)
+        ForEach(txProfile.list) {
+          Text($0.name).tag($0.id)
         }
       }
       .labelsHidden()
@@ -106,16 +106,11 @@ private struct AtuStatusView: View {
   
   public var body: some View {
     HStack(spacing: 20) {
-      Group {
-        Toggle(isOn: viewStore.binding(
-          get: {_ in atu.enabled},
-          send: { .atuEnabledButton($0) } )) { Text("ATU").frame(width: 40) }
-        Toggle(isOn: viewStore.binding(
-          get: {_ in atu.memoriesEnabled},
-          send: { .memoriesEnabledButton($0) })) { Text("MEM").frame(width: 40) }
-      }.toggleStyle(.button)
+      Button(action: { viewStore.send(.atuButton) })
+      { Text("ATU").frame(width: 40) }.background(atu.enabled ? Color(.controlAccentColor) : Color(.controlBackgroundColor))
+        .disabled(atu.enabled == false)
       
-      Text(atu.status.rawValue).frame(width: 100)
+      Text(atu.status.rawValue).frame(width: 180)
         .border(.secondary)
     }
   }
@@ -125,10 +120,14 @@ private struct ButtonsView: View {
   let viewStore: ViewStore<TxFeature.State, TxFeature.Action>
   @ObservedObject var transmit: Transmit
   @ObservedObject var radio: Radio
-  
+  @ObservedObject var atu: Atu
+
   public var body: some View {
-    HStack(spacing: 40) {
+    HStack(spacing: 45) {
       Group {
+        Toggle(isOn: viewStore.binding(
+          get: {_ in atu.memoriesEnabled},
+          send: { .memoriesEnabledButton($0) })) { Text("MEM").frame(width: 40) }
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.tune},
           send: { .tuneButton($0) } )) { Text("TUNE").frame(width: 40) }

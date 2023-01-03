@@ -61,10 +61,10 @@ private struct ProfileView: View {
   public var body: some View {
     HStack(spacing: 25) {
       Picker("", selection: viewStore.binding(
-        get: {_ in  micProfile.current },
+        get: {_ in  micProfile.current.id},
         send: { .micProfilePicker($0) })) {
-        ForEach(micProfile.list, id: \.self) {
-          Text($0)
+        ForEach(micProfile.list) {
+          Text($0.name).tag($0.id)
         }
       }
       .labelsHidden()

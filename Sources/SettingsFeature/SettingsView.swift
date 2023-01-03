@@ -9,6 +9,18 @@ import ComposableArchitecture
 import SwiftUI
 
 import Objects
+import Shared
+
+public enum SettingType: String {
+  case radio = "Radio"
+  case network = "Network"
+  case gps = "GPS"
+  case tx = "Transmit"
+  case phoneCw = "Phone CW"
+  case xvtrs = "Xvtrs"
+  case profiles = "Profiles"
+  case colors = "Colors"
+}
 
 public struct SettingsView: View {
   let store: StoreOf<SettingsFeature>
@@ -19,88 +31,99 @@ public struct SettingsView: View {
     self.apiModel = apiModel
   }
   
+  @AppStorage("selectedSettingType") var selectedSettingType: SettingType = .radio
+  @AppStorage("selectedProfileType") var selectedProfileType: ProfileType = .mic
+
+
   public var body: some View {
-    
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      
-      TabView {
+      TabView(selection: $selectedSettingType) {
         Group {
-          RadioSettingsView()
-            .tabItem {
-              Text("Radio")
-              Image(systemName: "antenna.radiowaves.left.and.right")
-            }.padding(.horizontal, 10)
+          RadioSettingsView(store: Store(initialState: RadioSettingsFeature.State(),
+                                         reducer: RadioSettingsFeature()),
+                            radio: apiModel.radio ?? Radio(Packet()) )
+          .tabItem {
+            Text(SettingType.radio.rawValue)
+            Image(systemName: "antenna.radiowaves.left.and.right")
+          }.tag(SettingType.radio)
           
-          NetworkSettingsView()
-            .tabItem {
-              Text("Network")
-              Image(systemName: "wifi")
-            }
+          NetworkSettingsView(store: Store(initialState: NetworkSettingsFeature.State(),
+                                           reducer: NetworkSettingsFeature()),
+                              radio: apiModel.radio ?? Radio(Packet()) )
+          .tabItem {
+            Text(SettingType.network.rawValue)
+            Image(systemName: "wifi")
+          }.tag(SettingType.network)
+          
           GpsSettingsView()
             .tabItem {
               Text("Gps")
               Image(systemName: "globe")
-            }
-          TxSettingsView()
-            .tabItem {
-              Text("Tx")
-              Image(systemName: "bolt.horizontal")
-            }
-          PhoneCwSettingsView()
-            .tabItem {
-              Text("Phone/Cw")
-              Image(systemName: "mic")
-            }
-          RxSettingsView()
-            .tabItem {
-              Text("Rx")
-              Image(systemName: "headphones")
-            }
+            }.tag(SettingType.gps)
+          
+          TxSettingsView(store: Store(initialState: TxSettingsFeature.State(),
+                                      reducer: TxSettingsFeature()) )
+          .tabItem {
+            Text(SettingType.tx.rawValue)
+            Image(systemName: "bolt.horizontal")
+          }.tag(SettingType.tx)
+          
+          PhoneCwSettingsView(store: Store(initialState: PhoneCwSettingsFeature.State(),
+                                           reducer: PhoneCwSettingsFeature()))
+          .tabItem {
+            Text(SettingType.phoneCw.rawValue)
+            Image(systemName: "mic")
+          }.tag(SettingType.phoneCw)
+          
         }
         Group {
-          FiltersSettingsView()
-            .tabItem {
-              Text("Filters")
-              Image(systemName: "camera.filters")
-            }
+          //          RxSettingsView()
+          //            .tabItem {
+          //              Text("Rx")
+          //              Image(systemName: "headphones")
+          //            }
           XvtrSettingsView()
             .tabItem {
-              Text("Xvtr")
+              Text(SettingType.xvtrs.rawValue)
               Image(systemName: "arrow.up.arrow.down.circle")
-            }
-          ColorsSettingsView()
-            .tabItem {
-              Text("Colors")
-              Image(systemName: "eyedropper")
-            }
-            .onDisappear(perform: {
-              // close the ColorPicker (if open)
-              if NSColorPanel.shared.isVisible {
-                NSColorPanel.shared.performClose(nil)
-              }
-            })
-          InfoSettingsView()
-            .tabItem {
-              Text("Info")
-              Image(systemName: "info.circle")
-            }
-          OtherSettingsView()
-            .tabItem {
-              Text("Other")
-              Image(systemName: "doc.circle")
-            }
+            }.tag(SettingType.xvtrs)
+          
+          ProfilesSettingsView(
+            store:
+              Store(initialState: ProfilesSettingsFeature.State(),
+                    reducer: ProfilesSettingsFeature()) )
+          .tabItem {
+            Text(SettingType.profiles.rawValue)
+            Image(systemName: "brain.head.profile")
+          }.tag(SettingType.profiles)
+
+          ColorsSettingsView(store: Store(initialState: ColorsSettingsFeature.State(),
+                                          reducer: ColorsSettingsFeature()))
+          .tabItem {
+            Text(SettingType.colors.rawValue)
+            Image(systemName: "eyedropper")
+          }.tag(SettingType.colors)
         }
       }
+      .onDisappear {
+        // close the ColorPicker (if open)
+        if NSColorPanel.shared.isVisible {
+          NSColorPanel.shared.performClose(nil)
+        }
+      }
+
     }
-    .frame(width: 640, height: 440)
+    .frame(width: 600, height: 350)
     .padding()
   }
 }
 
 struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-      SettingsView(store: Store(initialState: SettingsFeature.State(), reducer: SettingsFeature()), apiModel: ApiModel())
-        .frame(width: 600)
-        .padding(5)
-    }
+  static var previews: some View {
+    SettingsView(store: Store(initialState: SettingsFeature.State(),
+                              reducer: SettingsFeature()),
+                 apiModel: ApiModel())
+    .frame(width: 600, height: 350)
+    .padding()
+  }
 }

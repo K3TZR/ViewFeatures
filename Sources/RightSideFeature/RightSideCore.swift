@@ -22,40 +22,41 @@ public struct RightSideFeature: ReducerProtocol {
   public init() {}
   
   public struct State: Equatable {
-    var txEqSelected: Bool { didSet { UserDefaults.standard.set(txEqSelected, forKey: "txEqSelected") } }
-    var rxButton: Bool { didSet { UserDefaults.standard.set(rxButton, forKey: "rxButton") } }
-    var txButton: Bool { didSet { UserDefaults.standard.set(txButton, forKey: "txButton") } }
-    var ph1Button: Bool { didSet { UserDefaults.standard.set(ph1Button, forKey: "ph1Button") } }
-    var ph2Button: Bool { didSet { UserDefaults.standard.set(ph2Button, forKey: "ph2Button") } }
     var cwButton: Bool { didSet { UserDefaults.standard.set(cwButton, forKey: "cwButton") } }
     var eqButton: Bool { didSet { UserDefaults.standard.set(eqButton, forKey: "eqButton") } }
-    var rxState: RxFeature.State?
-    var txState: TxFeature.State?
-    var ph1State: Ph1Feature.State?
-    var ph2State: Ph2Feature.State?
+    var height: CGFloat
+    var ph1Button: Bool { didSet { UserDefaults.standard.set(ph1Button, forKey: "ph1Button") } }
+    var ph2Button: Bool { didSet { UserDefaults.standard.set(ph2Button, forKey: "ph2Button") } }
+    var rxButton: Bool { didSet { UserDefaults.standard.set(rxButton, forKey: "rxButton") } }
+    var txButton: Bool { didSet { UserDefaults.standard.set(txButton, forKey: "txButton") } }
+    var txEqSelected: Bool { didSet { UserDefaults.standard.set(txEqSelected, forKey: "txEqSelected") } }
+
     var cwState: CwFeature.State?
     var eqState: EqFeature.State?
-    var height: CGFloat
+    var ph1State: Ph1Feature.State?
+    var ph2State: Ph2Feature.State?
+    var rxState: RxFeature.State?
+    var txState: TxFeature.State?
     
     public init(
       cwButton: Bool = UserDefaults.standard.bool(forKey: "cwButton"),
       eqButton: Bool = UserDefaults.standard.bool(forKey: "eqButton"),
+      height: CGFloat = 400,
       ph1Button: Bool = UserDefaults.standard.bool(forKey: "ph1Button"),
       ph2Button: Bool = UserDefaults.standard.bool(forKey: "ph2Button"),
       rxButton: Bool = UserDefaults.standard.bool(forKey: "rxButton"),
       txButton: Bool = UserDefaults.standard.bool(forKey: "txButton"),
-      txEqSelected: Bool = UserDefaults.standard.bool(forKey: "txEqSelected"),
-      height: CGFloat = 400
+      txEqSelected: Bool = UserDefaults.standard.bool(forKey: "txEqSelected")
     )
     {
       self.cwButton = cwButton
       self.eqButton = eqButton
+      self.height = height
       self.ph1Button = ph1Button
       self.ph2Button = ph2Button
       self.rxButton = rxButton
       self.txButton = txButton
       self.txEqSelected = txEqSelected
-      self.height = height
     }
   }
   
@@ -63,11 +64,11 @@ public struct RightSideFeature: ReducerProtocol {
     // subview related
     case cw(CwFeature.Action)
     case eq(EqFeature.Action)
+    case openClose(Bool)
     case ph1(Ph1Feature.Action)
     case ph2(Ph2Feature.Action)
     case rx(RxFeature.Action)
     case tx(TxFeature.Action)
-    case openClose(Bool)
     
     // UI controls
     case cwButton
@@ -81,6 +82,24 @@ public struct RightSideFeature: ReducerProtocol {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
+        
+      case .cwButton:
+        state.cwButton.toggle()
+        if state.cwButton {
+          state.cwState = CwFeature.State()
+        } else {
+          state.cwState = nil
+        }
+        return .none
+        
+      case .eqButton:
+        state.eqButton.toggle()
+        if state.eqButton {
+          state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue)
+        } else {
+          state.eqState = nil
+        }
+        return .none
         
       case .openClose(let open):
         if open {
@@ -100,24 +119,6 @@ public struct RightSideFeature: ReducerProtocol {
         }
         return .none
 
-      case .cwButton:
-        state.cwButton.toggle()
-        if state.cwButton {
-          state.cwState = CwFeature.State()
-        } else {
-          state.cwState = nil
-        }
-        return .none
-        
-      case .eqButton:
-        state.eqButton.toggle()
-        if state.eqButton {
-          state.eqState = EqFeature.State(eqId: state.txEqSelected ? EqType.tx.rawValue : EqType.rx.rawValue)
-        } else {
-          state.eqState = nil
-        }
-        return .none
-        
       case .ph1Button:
         state.ph1Button.toggle()
         if state.ph1Button {

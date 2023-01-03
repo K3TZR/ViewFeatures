@@ -54,6 +54,5 @@ public struct BandFeature: ReducerProtocol {
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    return .none
   }
 }

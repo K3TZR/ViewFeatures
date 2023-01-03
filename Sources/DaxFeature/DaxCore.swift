@@ -5,8 +5,8 @@
 //  Created by Douglas Adams on 12/21/22.
 //
 
-import Foundation
 import ComposableArchitecture
+import Foundation
 
 import Shared
 
@@ -14,34 +14,31 @@ public struct DaxFeature: ReducerProtocol {
   
   public init() {}
   
+  @Dependency(\.apiModel) var apiModel
+  
   public struct State: Equatable {
-    var panadapterId: StreamId
 
     public init
     (
-      panadapterId: StreamId
     )
     {
-      self.panadapterId = panadapterId
     }
   }
   
   public enum Action: Equatable {
-    case antSelectionPicker(String)
-    case rfGainSlider(Int)
+    case daxIqChannelPicker(Int)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
     
-    case .antSelectionPicker(let antenna):
-      print("antSelectionPicker = \(antenna)")
-      return .none
-
-    case .rfGainSlider(let gain):
-      print("rfGainSlider = \(gain)")
-      return .none
+    case .daxIqChannelPicker(let channel):
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.daxIqChannel, String(channel))
+        }
+      }
     }
   }
 }

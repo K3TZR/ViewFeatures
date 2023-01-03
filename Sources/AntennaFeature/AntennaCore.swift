@@ -14,34 +14,43 @@ public struct AntennaFeature: ReducerProtocol {
   
   public init() {}
   
+  @Dependency(\.apiModel) var apiModel
+  
   public struct State: Equatable {
-    var panadapterId: StreamId
-
-    public init
-    (
-      panadapterId: StreamId
-    )
-    {
-      self.panadapterId = panadapterId
-    }
+    
+    public init() {}
   }
   
   public enum Action: Equatable {
     case antSelectionPicker(String)
+    case loopAButton
     case rfGainSlider(Int)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
-    
+      
     case .antSelectionPicker(let antenna):
-      print("antSelectionPicker = \(antenna)")
-      return .none
-
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id{
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.rxAnt, String(antenna))
+        }
+      }
+      
+    case .loopAButton:
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.loopAEnabled)
+        }
+      }
+      
     case .rfGainSlider(let gain):
-      print("rfGainSlider = \(gain)")
-      return .none
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.rfGain, String(gain))
+        }
+      }
     }
   }
 }

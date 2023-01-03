@@ -24,11 +24,9 @@ public struct AntennaView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading) {
         
-        let panadapter = apiModel.panadapters[id: viewStore.panadapterId] ?? Panadapter("0x99999999".streamId!)
+        let panadapter = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!] ?? Panadapter("0x99999999".streamId!)
         
         Antenna(viewStore: viewStore, panadapter: panadapter)
-        Loop(viewStore: viewStore, panadapter: panadapter)
-        RfGain(viewStore: viewStore, panadapter: panadapter)
       }
       .frame(width: 160)
       .padding(5)
@@ -47,41 +45,55 @@ private struct Antenna: View {
         get: {_ in  panadapter.rxAnt },
         send: { .antSelectionPicker($0) })) {
           ForEach(panadapter.antList, id: \.self) {
-            Text($0)
+            Text($0).tag($0)
           }
         }
         .labelsHidden()
         .pickerStyle(.menu)
         .frame(width: 70, alignment: .leading)
     }
-  }
-}
+//    Button(action: { viewStore.send(.loopAButton) }) { Text("LoopA") }
 
-private struct Loop: View {
-  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
-  @ObservedObject var panadapter: Panadapter
+//    HStack {
+      Toggle("Loop A", isOn: viewStore.binding(
+        get: {_ in panadapter.loopAEnabled },
+        send: .loopAButton ))
+      .toggleStyle(.button)
+//    }
 
-  var body: some View {
-    Button(action: {}) { Text("LoopA") }
-    }
-}
-
-private struct RfGain: View {
-  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
-  @ObservedObject var panadapter: Panadapter
-
-  var body: some View {
     HStack {
       Text("Rf Gain")
       Text("\(panadapter.rfGain)").frame(width: 25, alignment: .trailing)
-      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .rfGainSlider( Int($0)) }), in: -10...40, step: 10)
+      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .rfGainSlider( Int($0)) }), in: -10...20, step: 10)
     }
   }
 }
 
+//private struct Loop: View {
+//  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
+//  @ObservedObject var panadapter: Panadapter
+//
+//  var body: some View {
+//    Button(action: {}) { Text("LoopA") }
+//    }
+//}
+//
+//private struct RfGain: View {
+//  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
+//  @ObservedObject var panadapter: Panadapter
+//
+//  var body: some View {
+//    HStack {
+//      Text("Rf Gain")
+//      Text("\(panadapter.rfGain)").frame(width: 25, alignment: .trailing)
+//      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .rfGainSlider( Int($0)) }), in: -10...40, step: 10)
+//    }
+//  }
+//}
+
 struct AntennaView_Previews: PreviewProvider {
     static var previews: some View {
-      AntennaView(store: Store(initialState: AntennaFeature.State(panadapterId: "0x99999999".streamId!), reducer: AntennaFeature()), apiModel: ApiModel())
+      AntennaView(store: Store(initialState: AntennaFeature.State(), reducer: AntennaFeature()), apiModel: ApiModel())
         .frame(width: 160)
         .padding(5)
     }

@@ -23,14 +23,19 @@ public struct DisplayView: View {
 
       WithViewStore(self.store, observe: { $0 }) { viewStore in
         
-        let panadapter = apiModel.panadapters[id: viewStore.panadapterId] ?? Panadapter("0x99999999".streamId!)
-        let waterfallId = apiModel.panadapters[id: viewStore.panadapterId]?.waterfallId ?? "0x99999998".streamId!
-        let waterfall = apiModel.waterfalls[id: waterfallId] ?? Waterfall("0x99999998".streamId!)
+//        let panadapter = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!] ?? Panadapter("0x99999999".streamId!)
+//        let waterfallId = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!]?.waterfallId ?? "0x99999998".streamId!
+//        let waterfall = apiModel.waterfalls[id: waterfallId] ?? Waterfall("0x99999998".streamId!)
 
         VStack(alignment: .leading) {
-          PanadapterSettings(viewStore: viewStore, panadapter: panadapter)
-          Divider().foregroundColor(.blue)
-          WaterfallSettings(viewStore: viewStore, waterfall: waterfall)
+          if apiModel.activePanadapter != nil {
+            PanadapterSettings(viewStore: viewStore, panadapter: apiModel.panadapters[id: apiModel.activePanadapter!.id]!)
+            Divider().foregroundColor(.blue)
+            WaterfallSettings(viewStore: viewStore,
+                              waterfall: apiModel.waterfalls[id: apiModel.panadapters[id: apiModel.activePanadapter!.id]!.waterfallId]!)
+          } else {
+            EmptyView()
+          }
         }
         .frame(width: 250)
         .padding(5)
@@ -78,10 +83,10 @@ private struct WaterfallSettings: View {
       HStack (spacing: 45){
         Text("Color Gradient")
         Picker("", selection: viewStore.binding(
-          get: {_ in  waterfall.selectedGradient },
+          get: {_ in  waterfall.gradientIndex},
           send: { .gradientPicker($0) })) {
-            ForEach(Waterfall.GradientEnum.allCases, id: \.rawValue) {
-              Text($0.rawValue).tag($0.rawValue)
+            ForEach(Array(Waterfall.gradients.enumerated()), id: \.offset) { index, element in
+              Text(element).tag(index)
             }
           }
           .labelsHidden()
@@ -99,8 +104,8 @@ private struct WaterfallSettings: View {
         Toggle("", isOn: viewStore.binding(
           get: {_ in  waterfall.autoBlackEnabled },
           send: .autoBlackButton )).labelsHidden()
-        Text("\(waterfall.autoBlackLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(waterfall.autoBlackLevel) }, send: { .autoBlackLevel( Int($0)) }), in: 0...100)
+        Text("\(waterfall.blackLevel)").frame(width: 25, alignment: .trailing)
+        Slider(value: viewStore.binding(get: {_ in Double(waterfall.blackLevel) }, send: { .blackLevel( Int($0)) }), in: 0...100)
       }
       HStack(spacing: 10) {
         Text("Line Duration").frame(width: 90, alignment: .leading)
@@ -113,7 +118,7 @@ private struct WaterfallSettings: View {
 
 struct DisplayView_Previews: PreviewProvider {
     static var previews: some View {
-      DisplayView(store: Store(initialState: DisplayFeature.State(panadapterId: "0x99999999".streamId!), reducer: DisplayFeature()), apiModel: ApiModel())
+      DisplayView(store: Store(initialState: DisplayFeature.State(), reducer: DisplayFeature()), apiModel: ApiModel())
         .frame(width: 250)
         .padding(5)
     }

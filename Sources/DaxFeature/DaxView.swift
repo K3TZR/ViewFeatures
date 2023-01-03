@@ -24,7 +24,7 @@ public struct DaxView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(alignment: .leading) {
         
-        let panadapter = apiModel.panadapters[id: viewStore.panadapterId] ?? Panadapter("0x99999999".streamId!)
+        let panadapter = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!] ?? Panadapter("0x99999999".streamId!)
         
         Dax(viewStore: viewStore, panadapter: panadapter)
       }
@@ -41,11 +41,11 @@ private struct Dax: View {
   var body: some View {
     HStack(spacing: 5) {
       Text("Dax IQ Channel")
-      Picker("RxAnt", selection: viewStore.binding(
-        get: {_ in  panadapter.rxAnt },
-        send: { .antSelectionPicker($0) })) {
-          ForEach(panadapter.antList, id: \.self) {
-            Text($0)
+      Picker("", selection: viewStore.binding(
+        get: {_ in  panadapter.daxIqChannel },
+        send: { .daxIqChannelPicker($0) })) {
+          ForEach(panadapter.daxIqChoices, id: \.self) {
+            Text(String($0)).tag($0)
           }
         }
         .labelsHidden()
@@ -57,7 +57,7 @@ private struct Dax: View {
 
 struct DaxView_Previews: PreviewProvider {
     static var previews: some View {
-      DaxView(store: Store(initialState: DaxFeature.State(panadapterId: "0x99999999".streamId!), reducer: DaxFeature()), apiModel: ApiModel())
+      DaxView(store: Store(initialState: DaxFeature.State(), reducer: DaxFeature()), apiModel: ApiModel())
         .frame(width: 160)
         .padding(5)
     }

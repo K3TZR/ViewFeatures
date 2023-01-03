@@ -9,16 +9,16 @@ import SwiftUI
 
 struct XvtrSettingsView: View {
     var body: some View {
-        Text("Xvtr View not implemented")
+        Text("Xvtr View not implemented").font(.title).foregroundColor(.red)
         .frame(width: 600, height: 400)
         .padding()
     }
 }
 
 struct XvtrSettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        XvtrSettingsView()
-        .frame(width: 600, height: 400)
-        .padding()
-    }
+  static var previews: some View {
+    XvtrSettingsView()
+      .frame(width: 600, height: 400)
+      .padding()
+  }
 }

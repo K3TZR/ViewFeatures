@@ -29,7 +29,7 @@ public struct RxFeature: ReducerProtocol {
     case tuneButton
     case rfPowerSlider(Int)
     case tunePowerSlider(Int)
-    case txProfilePicker(String)
+    case txProfilePicker(UUID)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {

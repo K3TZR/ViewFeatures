@@ -14,16 +14,11 @@ public struct DisplayFeature: ReducerProtocol {
   
   public init() {}
   
+  @Dependency(\.apiModel) var apiModel
+  
   public struct State: Equatable {
-    var panadapterId: StreamId
-
-    public init
-    (
-      panadapterId: StreamId
-    )
-    {
-      self.panadapterId = panadapterId
-    }
+    
+    public init() {}
   }
   
   public enum Action: Equatable {
@@ -33,50 +28,77 @@ public struct DisplayFeature: ReducerProtocol {
     case weightedAverageButton
     case colorGain(Int)
     case lineDurationLevel(Int)
-    case autoBlackLevel(Int)
+    case blackLevel(Int)
     case autoBlackButton
-    case gradientPicker(String)
+    case gradientPicker(Int)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
-    
+      
     case .averageLevel(let level):
-      print("averageLevel = \(level)")
-      return .none
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.average, String(level))
+        }
+      }
 
     case .fillLevel(let level):
-      print("fillLevel = \(level)")
-      return .none
-
-    case .fpsLevel(let level):
-      print("fpsLevel = \(level)")
-      return .none
-    
-    case .weightedAverageButton:
-      print("weightedAverageButton")
-      return .none
-    
-    case .colorGain(let gain):
-      print("colorGain = \(gain)")
-      return .none
-
-    case .lineDurationLevel(let level):
-      print("lineDurationLevel = \(level)")
-      return .none
-
-    case .autoBlackLevel(let level):
-      print("autoBlackLevel = \(level)")
-      return .none
-
-    case .autoBlackButton:
-      print("autoBlackButton")
-      return .none
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.setFillLevel(level)
+        }
+      }
       
-    case .gradientPicker(let gradient):
-      print("gradientPicker = \(gradient)")
-      return .none
+    case .fpsLevel(let level):
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.fps, String(level))
+        }
+      }
+
+    case .weightedAverageButton:
+      return .run { _ in
+        if let panadapterId = await apiModel.activePanadapter?.id {
+          await apiModel.panadapters[id: panadapterId]?.parseAndSend(.weightedAverageEnabled)
+        }
+      }
+
+    case .colorGain(let gain):
+      return .run { _ in
+        if let waterfallId = await apiModel.activePanadapter?.waterfallId {
+          await apiModel.waterfalls[id: waterfallId]?.parseAndSend(.colorGain, String(gain))
+        }
+      }
+      
+    case .lineDurationLevel(let duration):
+      return .run { _ in
+        if let waterfallId = await apiModel.activePanadapter?.waterfallId {
+          await apiModel.waterfalls[id: waterfallId]?.parseAndSend(.lineDuration, String(duration))
+        }
+      }
+      
+    case .blackLevel(let level):
+      return .run { _ in
+        if let waterfallId = await apiModel.activePanadapter?.waterfallId {
+          await apiModel.waterfalls[id: waterfallId]?.parseAndSend(.blackLevel, String(level))
+        }
+      }
+      
+    case .autoBlackButton:
+      return .run { _ in
+        if let waterfallId = await apiModel.activePanadapter?.waterfallId {
+          await apiModel.waterfalls[id: waterfallId]?.parseAndSend(.autoBlackEnabled)
+        }
+      }
+      
+    case .gradientPicker(let index):
+      return .run { _ in
+        if let waterfallId = await apiModel.activePanadapter?.waterfallId {
+          await apiModel.waterfalls[id: waterfallId]?.parseAndSend(.gradientIndex, String(index))
+        }
+      }
     }
   }
 }
