@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/K3TZR/ApiFeatures.git",
       "state" : {
-        "revision" : "411879794d34528be788fabadc8fb9541b034760",
-        "version" : "1.5.1"
+        "revision" : "bddc7ff8d863aa0e2dfbd9886aa1c2e33a0ad0ad",
+        "version" : "1.11.1"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/K3TZR/SharedFeatures.git",
       "state" : {
-        "revision" : "dfa853060c4c8da6652d56a194046275f2b8e67b",
-        "version" : "1.3.1"
+        "revision" : "0d1f59b0eaa3668e303b6c60e8330e736ce1cb64",
+        "version" : "1.6.1"
       }
     },
     {
