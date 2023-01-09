@@ -8,70 +8,53 @@
 import Foundation
 import ComposableArchitecture
 
+import Objects
 import Shared
 
 public struct TxFeature: ReducerProtocol {
-
   public init() {}
   
   @Dependency(\.apiModel) var apiModel
   
   public struct State: Equatable {
-
-    public init(
-    )
-    {
-    }
+    public init() {}
   }
   
   public enum Action: Equatable {
-    case atuButton
-    case memoriesEnabledButton(Bool)
     case moxButton(Bool)
-    case tuneButton(Bool)
-    case rfPowerSlider(Int)
-    case tunePowerSlider(Int)
-    case txProfilePicker(UUID)
+    case setAtuBool(Atu.Property, Bool)
+    case setTransmitBool(Transmit.Property, Bool)
+    case setTransmitInt(Transmit.Property, Int)
+    case txProfile(String)
   }
   
-  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    
+  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {    
     switch action {
-    case .atuButton:
-      return .run { _ in
-        await apiModel.transmit.sendAtu("start")
-      }
-
-    case .memoriesEnabledButton(let state):
-      return .run { _ in
-        await apiModel.transmit.sendAtu("set memories_enabled", "=", state.as1or0)
-      }
-
+      
     case .moxButton(let state):
       return .run { _ in
         await apiModel.transmit.sendMox(state)
       }
-
-    case .tuneButton(let state):
+      
+    case .setAtuBool(let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.tune, state.as1or0)
+        await apiModel.atu.setAndSend(property, value.as1or0)
       }
 
-    case .rfPowerSlider(let level):
+    case .setTransmitBool(let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.rfPower, String(level))
+        await apiModel.transmit.setAndSend(property, value.as1or0)
       }
-
-    case .tunePowerSlider(let level):
+      
+    case .setTransmitInt(let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.tunePower, String(level))
+        await apiModel.transmit.setAndSend(property, String(value))
       }
-
-    case .txProfilePicker(let selection):
-//      return .run { _ in
-//        await apiModel.profiles[id: "tx"]?.parseAndSend(.current, selection)
-//      }
-      return .none
+      
+    case .txProfile(let name):
+      return .run { _ in
+        await apiModel.profileLoad("tx", name)
+      }
     }
   }
 }

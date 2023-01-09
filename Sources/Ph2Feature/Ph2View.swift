@@ -49,11 +49,11 @@ struct ButtonsView: View {
         Text("AM Carrier")
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.voxEnabled},
-          send: .voxButton )) { Text("VOX").frame(width: 55) }
+          send: { .transmitProperty(.setAndSend, .voxEnabled, $0.as1or0) } )) { Text("VOX").frame(width: 55) }
         Text("Vox Delay")
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.companderEnabled},
-          send: .dexpButton )) { Text("DEXP").frame(width: 55) }
+          send: { .transmitProperty(.setAndSend, .companderEnabled, $0.as1or0) } )) { Text("DEXP").frame(width: 55) }
       }.toggleStyle(.button)
     }
   }
@@ -68,19 +68,19 @@ struct SlidersView: View {
     VStack(spacing: 8) {
       HStack(spacing: 20) {
         Text("\(transmit.carrierLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.carrierLevel) }, send: { .levelSlider(.amCarrierLevel, Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.carrierLevel) }, send: { .transmitProperty(.setAndSend, .amCarrierLevel, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.voxLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .levelSlider(.voxLevel, Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxLevel) }, send: { .transmitProperty(.setAndSend, .voxLevel, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.voxDelay)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .levelSlider(.voxDelay, Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.voxDelay) }, send: { .transmitProperty(.setAndSend, .voxDelay, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.companderLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .levelSlider(.companderLevel, Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.companderLevel) }, send: { .transmitProperty(.setAndSend, .companderLevel, String(Int($0))) }), in: 0...100)
       }
     }
 //    .frame(width: 180)
@@ -90,36 +90,70 @@ struct SlidersView: View {
 struct TxFilterView: View {
   let viewStore: ViewStore<Ph2Feature.State, Ph2Feature.Action>
   @ObservedObject var transmit: Transmit
-  
+
+  enum Focusable: String, Hashable, Equatable {
+    case filterLow
+    case filterHigh
+  }
+
+  @FocusState private var hasFocus: Focusable?
+
   public var body: some View {
     
     VStack(alignment: .leading, spacing: 0) {
-      HStack(spacing: 40) {
+      HStack(spacing: 20) {
         Group {
           Text("Tx Filter")
-          Stepper(value: viewStore.binding(
-            get: {_ in  transmit.txFilterLow },
-            send: { .txFilterLowCut($0) }),
-                  in:  0...transmit.txFilterHigh,
-                  step: 50) {
-            Text("\(transmit.txFilterLow)").frame(width: 40, alignment: .trailing) }
-          
-          Stepper(value: viewStore.binding(
-            get: {_ in  transmit.txFilterHigh },
-            send: { .txFilterHighCut($0) }),
-                  in: 0...10_000,
-                  step: 50) {
-            Text("\(transmit.txFilterHigh)").frame(width: 40, alignment: .trailing) }
+          HStack(spacing: 2) {
+            TextField("", value: viewStore.binding(
+              get: {_ in  transmit.txFilterLow},
+              send: { .transmitProperty(.set, .txFilterLow, String($0)) } ), format: .number)
+            .focused($hasFocus, equals: .filterLow)
+            .onSubmit { viewStore.send(.transmitProperty(.send, .txFilterLow, "")) }
+            .multilineTextAlignment(.trailing)
+            
+            Stepper("", value: viewStore.binding(
+              get: {_ in  transmit.txFilterLow },
+              send: { .transmitProperty(.set, .txFilterLow, String($0)) }),
+                    in:  0...transmit.txFilterHigh,
+                    step: 50)
+            .labelsHidden()
+          }
+
+          HStack(spacing: 2) {
+            TextField("", value: viewStore.binding(
+              get: {_ in  transmit.txFilterHigh},
+              send: { .transmitProperty(.set, .txFilterHigh, String($0)) } ), format: .number)
+            .focused($hasFocus, equals: .filterHigh)
+            .onSubmit { viewStore.send(.transmitProperty(.send, .txFilterHigh, "")) }
+            .multilineTextAlignment(.trailing)
+            
+            Stepper("", value: viewStore.binding(
+              get: {_ in  transmit.txFilterHigh },
+              send: { .transmitProperty(.set, .txFilterHigh, String($0)) }),
+                    in: 0...10_000,
+                    step: 50)
+            .labelsHidden()
+          }
         }
+      }.padding(.trailing, 10)
+    .onChange(of: hasFocus) { [hasFocus] _ in
+//      print("onChange: from \(hasFocus?.rawValue ?? "none") -> \(newValue?.rawValue ?? "none")")
+      switch hasFocus {
+      case .filterLow:    viewStore.send(.transmitProperty(.send, .txFilterLow, ""))
+      case .filterHigh:   viewStore.send(.transmitProperty(.send, .txFilterHigh, ""))
+      case .none:         break
       }
-      HStack(spacing: 60) {
+    }
+    
+      HStack(spacing: 65) {
         Group {
           Text("Low Cut")
           Text("High Cut")
         }
         .font(.footnote)
       }
-      .padding(.leading, 90)
+      .padding(.leading, 95)
     }
   }
 }
@@ -133,13 +167,13 @@ struct MicButtonsView: View {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.micBiasEnabled},
-          send: .micBiasButton )) { Text("Bias").frame(width: 55) }
+          send: { .transmitProperty(.setAndSend, .micBiasEnabled, $0.as1or0) } )) { Text("Bias").frame(width: 55) }
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.micBoostEnabled},
-          send: .micBoostButton )) { Text("Boost").frame(width: 55) }
+          send: { .transmitProperty(.setAndSend, .micBoostEnabled, $0.as1or0) } )) { Text("Boost").frame(width: 55) }
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.meterInRxEnabled},
-          send: .meterInRxButton )) { Text("Meter in Rx").frame(width: 70) }
+          send: { .transmitProperty(.setAndSend, .meterInRxEnabled, $0.as1or0) } )) { Text("Meter in Rx").frame(width: 70) }
       }
       .toggleStyle(.button)
     }

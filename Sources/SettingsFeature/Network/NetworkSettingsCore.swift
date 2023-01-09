@@ -54,22 +54,22 @@ public struct NetworkSettingsFeature: ReducerProtocol {
 
     case .enforcePrivateIpButton:
       return .run { _ in
-        await apiModel.radio?.parseAndSend(.enforcePrivateIpEnabled)
+        await apiModel.radio?.setAndSend(.enforcePrivateIpEnabled)
       }
 
     case .staticIp(let ip):
       return .run { _ in
-        await apiModel.radio?.parseAndSend(Radio.StaticNetProperty.ip, ip)
+        await apiModel.radio?.setAndSend(Radio.StaticNetProperty.ip, ip)
       }
       
     case .staticMask(let mask):
       return .run { _ in
-        await apiModel.radio?.parseAndSend(Radio.StaticNetProperty.mask, mask)
+        await apiModel.radio?.setAndSend(Radio.StaticNetProperty.mask, mask)
       }
       
     case .staticGateway(let gateway):
       return .run { _ in
-        await apiModel.radio?.parseAndSend(Radio.StaticNetProperty.gateway, gateway)
+        await apiModel.radio?.setAndSend(Radio.StaticNetProperty.gateway, gateway)
       }
     }
   }

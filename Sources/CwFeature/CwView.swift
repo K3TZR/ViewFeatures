@@ -53,7 +53,7 @@ struct ButtonsView: View {
         Text("Speed")
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwSidetoneEnabled },
-          send: .sidetoneButton )) {Text("Sidetone").frame(width: 55)}
+          send: { .transmitProperty(.setAndSend, .cwSidetoneEnabled, String($0)) } )) {Text("Sidetone").frame(width: 55)}
           .toggleStyle(.button)
         Text("Pan")
       }
@@ -70,19 +70,19 @@ struct SlidersView: View {
     VStack(spacing: 8) {
       HStack(spacing: 10) {
         Text("\(transmit.cwBreakInDelay)").frame(width: 35, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwBreakInDelay) }, send: { .delayLevel( Int($0)) }), in: 30...2_000)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwBreakInDelay) }, send: { .transmitProperty(.setAndSend, .cwBreakInDelay, String($0)) }), in: 30...2_000)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwSpeed)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwSpeed) }, send: { .speedLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwSpeed) }, send: { .transmitProperty(.setAndSend, .cwSpeed, String($0)) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwMonitorGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorGain) }, send: { .sidetoneGain( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorGain) }, send: { .transmitProperty(.setAndSend, .cwMonitorGain, String($0)) }), in: 0...100)
       }
       HStack(spacing: 20) {
         Text("\(transmit.cwMonitorPan)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorPan) }, send: { .sidetonePan( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.cwMonitorPan) }, send: { .transmitProperty(.setAndSend, .cwMonitorPan, String($0)) }), in: 0...100)
       }
     }
 //    .frame(width: 180)
@@ -93,26 +93,39 @@ struct BottomButtonsView: View {
   let viewStore: ViewStore<CwFeature.State, CwFeature.Action>
   @ObservedObject var transmit: Transmit
   
+  enum Focusable: String, Hashable, Equatable {
+    case pitch
+  }
+  
+  @FocusState private var hasFocus: Focusable?
+  
   public var body: some View {
     
     HStack(spacing: 10) {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwBreakInEnabled },
-          send: .breakinButton )) {Text("BreakIn").frame(width: 55)}
+          send: { .transmitProperty(.setAndSend, .cwBreakInEnabled, String($0)) } )) {Text("BreakIn").frame(width: 55)}
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.cwIambicEnabled },
-          send: .iambicButton )){Text("Iambic").frame(width: 45)}
+          send: { .transmitProperty(.setAndSend, .cwIambicEnabled, String($0)) } )){Text("Iambic").frame(width: 45)}
       }
       .toggleStyle(.button)
       
       Text("Pitch")
-      Stepper(value: viewStore.binding(
+      TextField("", value: viewStore.binding(
+        get: {_ in  transmit.cwPitch},
+        send: { .transmitProperty(.set, .cwPitch, String($0)) } ), format: .number)
+      .focused($hasFocus, equals: .pitch)
+      .onSubmit { viewStore.send(.transmitProperty(.send, .cwPitch, "")) }
+      .multilineTextAlignment(.trailing)
+      
+      Stepper("", value: viewStore.binding(
         get: {_ in  transmit.cwPitch },
-        send: { .pitchChange($0) }),
+        send: { .transmitProperty(.setAndSend, .cwPitch, String($0)) } ),
               in: 100...6000,
-              step: 50) {
-        Text("\(transmit.cwPitch)").frame(width: 40, alignment: .trailing).background(Color.secondary) }
+              step: 50)
+      .labelsHidden()
     }
   }
 }

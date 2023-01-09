@@ -61,10 +61,10 @@ private struct ProfileView: View {
   public var body: some View {
     HStack(spacing: 25) {
       Picker("", selection: viewStore.binding(
-        get: {_ in  micProfile.current.id},
-        send: { .micProfilePicker($0) })) {
-        ForEach(micProfile.list) {
-          Text($0.name).tag($0.id)
+        get: {_ in  micProfile.current},
+        send: { .profileProperty("mic", $0) })) {
+          ForEach(micProfile.list, id: \.self) {
+          Text($0).tag($0)
         }
       }
       .labelsHidden()
@@ -89,7 +89,7 @@ private struct MicSelectionView: View {
     HStack(spacing: 10) {
       Picker("", selection: viewStore.binding(
         get: {_ in  transmit.micSelection },
-        send: { .micSelectionPicker($0) })) {
+        send: { .transmitProperty(.setAndSend, .micSelection, $0) })) {
           ForEach(radio.micList, id: \.self) {
             Text($0)
           }
@@ -100,7 +100,7 @@ private struct MicSelectionView: View {
       
       HStack(spacing: 20) {
         Text("\(transmit.micLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.micLevel) }, send: { .micLevelSlider( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.micLevel) }, send: { .transmitProperty(.setAndSend, .micLevel, String(Int($0))) }), in: 0...100)
       }
     }
   }
@@ -125,12 +125,12 @@ private struct ProcView: View {
       HStack(spacing: 10) {
         Toggle(isOn: viewStore.binding(
           get: {_ in  transmit.speechProcessorEnabled },
-          send: { .speechProcessorButton($0) })) { Text("PROC").frame(width: 55)}
+          send: { .transmitProperty(.setAndSend, .speechProcessorEnabled, $0.as1or0) })) { Text("PROC").frame(width: 55)}
           .toggleStyle(.button)
         
         HStack(spacing: 20) {
           Text("\(transmit.speechProcessorLevel)").frame(width: 25, alignment: .trailing)
-          Slider(value: viewStore.binding(get: {_ in Double(transmit.speechProcessorLevel) }, send: { .speechProcessorLevelSlider( Int($0)) }), in: 0...100)
+          Slider(value: viewStore.binding(get: {_ in Double(transmit.speechProcessorLevel) }, send: { .transmitProperty(.setAndSend, .speechProcessorLevel, String(Int($0))) }), in: 0...100)
         }
       }
     }
@@ -147,12 +147,12 @@ private struct MonView: View {
     HStack(spacing: 10) {
       Toggle(isOn: viewStore.binding(
         get: {_ in  transmit.txMonitorEnabled },
-        send: { .txMonitorButton($0) })) { Text("MON").frame(width: 55)}
+        send: { .transmitProperty(.setAndSend, .txMonitorEnabled, $0.as1or0) })) { Text("MON").frame(width: 55)}
         .toggleStyle(.button)
       
       HStack(spacing: 20) {
         Text("\(transmit.ssbMonitorGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(transmit.ssbMonitorGain) }, send: { .ssbMonitorGainSlider( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(transmit.ssbMonitorGain) }, send: { .transmitProperty(.setAndSend, .ssbMonitorGain, String(Int($0))) }), in: 0...100)
       }
     }
   }
@@ -168,12 +168,12 @@ private struct AccView: View {
     HStack(alignment: .center, spacing: 40) {
       Toggle(isOn: viewStore.binding(
         get: {_ in  transmit.micAccEnabled },
-        send: { .micAccButton($0) })) { Text("ACC").frame(width: 40)}
+        send: { .transmitProperty(.setAndSend, .micAccEnabled, $0.as1or0) })) { Text("ACC").frame(width: 40)}
         .toggleStyle(.button)
       
       Toggle(isOn: viewStore.binding(
         get: {_ in  transmit.daxEnabled },
-        send: { .daxButton($0) })) { Text("DAX").frame(width: 40)}
+        send: { .transmitProperty(.setAndSend, .daxEnabled, $0.as1or0) })) { Text("DAX").frame(width: 40)}
         .toggleStyle(.button)
     }
   }

@@ -26,100 +26,51 @@ public struct PhoneCwSettingsFeature: ReducerProtocol {
   }
   
   public enum Action: Equatable {
-    case micBiasButton
-    case micBoostButton
-    case meterInRxButton
-    case iambicButton
-    case iambicMode(String)
-    case swapPaddlesButton
-    case cwSideband(String)
-    case cwSyncCwxButton
-    case rttyMark(Int)
-    case filterVoiceAutoButton
-    case filterVoiceLevel(Int)
-    case filterCwAutoButton
-    case filterCwLevel(Int)
-    case filterDigitalAutoButton
-    case filterDigitalLevel(Int)
+    // parse & send
+    case setFilterBool(Radio.FilterProperty)
+    case setFilterInt(Radio.FilterProperty,Int)
+    case setTransmitBool(Transmit.Property,Bool)
+    case setTransmitString(Transmit.Property,String)
+    // parse only
+    case setRadioString(Radio.RadioProperty,String)
+    // send only
+    case sendRadioProperty(Radio.RadioProperty)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     
     switch action {
     
-    case .cwSideband(let sideband):
+    case .sendRadioProperty(let property):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwlEnabled, sideband)
-      }
-
-    case .cwSyncCwxButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwSyncCwxEnabled)
-      }
-
-    case .filterCwAutoButton:
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.cw, .autoLevel)
-      }
-
-    case .filterCwLevel(let level):
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.cw, .level, String(level))
-      }
-
-    case .filterDigitalAutoButton:
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.digital, .autoLevel)
-      }
-
-    case .filterDigitalLevel(let level):
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.digital, .level, String(level))
-      }
-
-    case .filterVoiceAutoButton:
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.voice, .autoLevel)
-      }
-
-    case .filterVoiceLevel(let level):
-      return .run { _ in
-        await apiModel.radio?.parseAndSend(.voice, .level, String(level))
-      }
-
-    case .iambicButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwIambicEnabled)
+        await apiModel.radio?.sendOnly(property)
       }
       
-    case .iambicMode(let mode):
+    case .setFilterBool(let type):
+      guard type == .cw || type == .voice || type == .digital else { return .none }
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwIambicMode, mode)
+        await apiModel.radio?.setAndSend(type, .autoLevel)
       }
 
-    case .meterInRxButton:
+    case .setFilterInt(let type, let value):
+      guard type == .cw || type == .voice || type == .digital else { return .none }
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.meterInRxEnabled)
+        await apiModel.radio?.setAndSend(type, .level, String(value))
       }
 
-    case .micBiasButton:
+    case .setRadioString(let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBiasEnabled)
+        await apiModel.radio?.setOnly(property, value)
       }
-
-    case .micBoostButton:
+      
+    case .setTransmitBool(let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBoostEnabled)
+        await apiModel.transmit.setAndSend(property, value.as1or0)
       }
-
-    case .rttyMark(let mark):
+      
+    case .setTransmitString(let property, let value):
       return .run { _ in
-        await apiModel.radio?.parseAndSend(.rttyMark, String(mark))
-      }
-
-    case .swapPaddlesButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwSwapPaddles)
+        await apiModel.transmit.setAndSend(property, value)
       }
     }
   }

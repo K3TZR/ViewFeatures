@@ -20,12 +20,7 @@ public struct DisplayView: View {
   }
   
     public var body: some View {
-
       WithViewStore(self.store, observe: { $0 }) { viewStore in
-        
-//        let panadapter = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!] ?? Panadapter("0x99999999".streamId!)
-//        let waterfallId = apiModel.panadapters[id: apiModel.activePanadapter?.id ?? "0x99999999".streamId!]?.waterfallId ?? "0x99999998".streamId!
-//        let waterfall = apiModel.waterfalls[id: waterfallId] ?? Waterfall("0x99999998".streamId!)
 
         VStack(alignment: .leading) {
           if apiModel.activePanadapter != nil {
@@ -52,23 +47,23 @@ private struct PanadapterSettings: View {
       HStack(spacing: 10) {
         Text("Average").frame(width: 90, alignment: .leading)
         Text("\(panadapter.average)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(panadapter.average) }, send: { .averageLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(panadapter.average) }, send: { .panadapterProperty(.average, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 10) {
         Text("Frames/sec").frame(width: 90, alignment: .leading)
         Text("\(panadapter.fps)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(panadapter.fps) }, send: { .fpsLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(panadapter.fps) }, send: { .panadapterProperty(.fps, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 10) {
         Text("Fill").frame(width: 90, alignment: .leading)
         Text("\(panadapter.fillLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(panadapter.fillLevel) }, send: { .fillLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(panadapter.fillLevel) }, send: { .panadapterProperty(.fillLevel, String(Int($0))) }), in: 0...100)
       }
       HStack {
         Text("Weighted Average").frame(width: 130, alignment: .leading)
         Toggle("", isOn: viewStore.binding(
           get: {_ in panadapter.weightedAverageEnabled },
-          send: .weightedAverageButton ))
+          send: { .panadapterProperty(.weightedAverageEnabled, $0.as1or0 ) } ))
       }
     }
   }
@@ -84,7 +79,7 @@ private struct WaterfallSettings: View {
         Text("Color Gradient")
         Picker("", selection: viewStore.binding(
           get: {_ in  waterfall.gradientIndex},
-          send: { .gradientPicker($0) })) {
+          send: { .waterfallProperty(.gradientIndex, String($0)) })) {
             ForEach(Array(Waterfall.gradients.enumerated()), id: \.offset) { index, element in
               Text(element).tag(index)
             }
@@ -97,20 +92,20 @@ private struct WaterfallSettings: View {
       HStack(spacing: 10) {
         Text("Color Gain").frame(width: 90, alignment: .leading)
         Text("\(waterfall.colorGain)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(waterfall.colorGain) }, send: { .colorGain( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(waterfall.colorGain) }, send: { .waterfallProperty(.colorGain, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 10) {
         Text("Auto Black").frame(width: 65, alignment: .leading)
         Toggle("", isOn: viewStore.binding(
           get: {_ in  waterfall.autoBlackEnabled },
-          send: .autoBlackButton )).labelsHidden()
+          send: { .waterfallProperty(.autoBlackEnabled, $0.as1or0) } )).labelsHidden()
         Text("\(waterfall.blackLevel)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(waterfall.blackLevel) }, send: { .blackLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(waterfall.blackLevel) }, send: { .waterfallProperty(.blackLevel, String(Int($0))) }), in: 0...100)
       }
       HStack(spacing: 10) {
         Text("Line Duration").frame(width: 90, alignment: .leading)
         Text("\(waterfall.lineDuration)").frame(width: 25, alignment: .trailing)
-        Slider(value: viewStore.binding(get: {_ in Double(waterfall.lineDuration) }, send: { .lineDurationLevel( Int($0)) }), in: 0...100)
+        Slider(value: viewStore.binding(get: {_ in Double(waterfall.lineDuration) }, send: { .waterfallProperty(.lineDuration, String(Int($0))) }), in: 0...100)
       }
     }
   }

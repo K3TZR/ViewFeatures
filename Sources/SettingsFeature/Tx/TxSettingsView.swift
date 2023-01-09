@@ -17,13 +17,7 @@ struct TxSettingsView: View {
   
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      if apiModel.radio == nil {
-        VStack {
-          Text("Radio must be connected").font(.title).foregroundColor(.red)
-          Text("to use Tx Settings").font(.title).foregroundColor(.red)
-        }
-
-      } else {
+      if apiModel.clientInitialized {
         VStack {
           Group {
             InterlocksGridView(viewStore: viewStore,interlock: apiModel.interlock)
@@ -40,6 +34,11 @@ struct TxSettingsView: View {
             Spacer()
           }
         }
+      } else {
+        VStack {
+          Text("Radio must be connected").font(.title).foregroundColor(.red)
+          Text("to use Tx Settings").font(.title).foregroundColor(.red)
+        }
       }
     }
   }
@@ -52,6 +51,17 @@ private struct InterlocksGridView: View {
   private let interlockLevels = ["Disabled", "Active High", "Active Low"]
   
   let width: CGFloat = 100
+  
+  enum Focusable: String, Hashable, Equatable {
+    case accTx
+    case rcaTx1
+    case rcaTx2
+    case rcaTx3
+    case timeout
+    case txDelay
+  }
+  @FocusState private var hasFocus: Focusable?
+
   var rcaSelection: Int {
     guard interlock.rcaTxReqEnabled else { return 0 }
     return interlock.rcaTxReqPolarity ? 1 : 2
@@ -67,41 +77,47 @@ private struct InterlocksGridView: View {
       GridRow() {
         Picker("RCA", selection: viewStore.binding(
           get: {_ in interlockLevels[rcaSelection] },
-          send: { .rcaInterlock($0) } )) {
+          send: { .setInterlockState(.rca, $0) } )) {
             ForEach(interlockLevels, id: \.self) {
               Text($0).tag($0)
             }
           }
           .pickerStyle(.menu)
           .frame(width: 180)
-        
+
         Picker("ACC", selection: viewStore.binding(
           get: {_ in interlockLevels[accSelection]  },
-          send: { .accInterlock($0) } )) {
+          send: { .setInterlockState(.acc, $0) } )) {
             ForEach(interlockLevels, id: \.self) {
               Text($0).tag($0)
             }
           }
           .pickerStyle(.menu)
           .frame(width: 180)
-        
+
       }
       GridRow() {
         HStack {
           Toggle("RCA TX1", isOn: viewStore.binding(
             get: {_ in  interlock.tx1Enabled },
-            send: .rcaTx1Button ))
+            send: { .setInterlockBool(.tx1Enabled, $0) } ))
           TextField("tx1 delay", value: viewStore.binding(
             get: {_ in  interlock.tx1Delay},
-            send: { .rcaTx1Delay($0) } ), format: .number)
+            send: { .setInterlockInt(.tx1Delay, $0) } ), format: .number)
+          .focused($hasFocus, equals: .rcaTx1)
+          .multilineTextAlignment(.trailing)
+
         }
         HStack {
           Toggle("ACC TX", isOn: viewStore.binding(
             get: {_ in  interlock.accTxEnabled },
-            send: .accTxButton ))
+            send: { .setInterlockBool(.accTxEnabled, $0) } ))
           TextField("acc delay", value: viewStore.binding(
             get: {_ in  interlock.accTxDelay},
-            send: { .accTxDelay($0) } ), format: .number)
+            send: { .setInterlockInt(.accTxDelay, $0) } ), format: .number)
+          .focused($hasFocus, equals: .accTx)
+          .multilineTextAlignment(.trailing)
+
         }
       }.frame(width: 180)
       
@@ -109,16 +125,22 @@ private struct InterlocksGridView: View {
         HStack {
           Toggle("RCA TX2", isOn: viewStore.binding(
             get: {_ in  interlock.tx2Enabled},
-            send: .rcaTx2Button ))
+            send: {.setInterlockBool(.tx2Enabled, $0) } ))
           TextField("tx2 delay", value: viewStore.binding(
             get: {_ in  interlock.tx2Delay },
-            send: { .rcaTx2Delay($0) } ), format: .number)
+            send: { .setInterlockInt(.tx2Delay, $0) } ), format: .number)
+          .focused($hasFocus, equals: .rcaTx2)
+          .multilineTextAlignment(.trailing)
+
         }
         HStack {
           Text("TX Delay").frame(width: 65, alignment: .leading)
           TextField("tx delay", value: viewStore.binding(
             get: {_ in  interlock.txDelay},
-            send: { .txDelay($0) } ), format: .number)
+            send: { .setInterlockInt(.txDelay, $0) } ), format: .number)
+          .focused($hasFocus, equals: .txDelay)
+          .multilineTextAlignment(.trailing)
+
         }
       }.frame(width: 180)
       
@@ -126,18 +148,35 @@ private struct InterlocksGridView: View {
         HStack {
           Toggle("RCA TX3", isOn: viewStore.binding(
             get: {_ in  interlock.tx3Enabled},
-            send: .rcaTx3Button ))
+            send: { .setInterlockBool(.tx3Enabled, $0) } ))
           TextField("tx3 delay", value: viewStore.binding(
             get: {_ in  interlock.tx3Delay },
-            send: { .rcaTx3Delay($0) } ), format: .number)
+            send: { .setInterlockInt(.tx3Delay, $0) } ), format: .number)
+          .focused($hasFocus, equals: .rcaTx3)
+          .multilineTextAlignment(.trailing)
+
         }
         HStack {
           Text("Timeout (min)")
           TextField("minutes", value: viewStore.binding(
             get: {_ in  interlock.timeout },
-            send: { .timeout($0) } ), format: .number)
+            send: { .setInterlockInt(.timeout, $0) } ), format: .number)
+          .focused($hasFocus, equals: .timeout)
+          .multilineTextAlignment(.trailing)
         }
       }.frame(width: 180)
+    }
+    .onChange(of: hasFocus) { [hasFocus] _ in
+      //        print("onChange: from \(hasFocus?.rawValue ?? "none") -> \(newValue?.rawValue ?? "none")")
+      switch hasFocus {
+      case .accTx:      viewStore.send(.sendInterlockProperty(.accTxDelay))
+      case .rcaTx1:     viewStore.send(.sendInterlockProperty(.tx1Delay))
+      case .rcaTx2:     viewStore.send(.sendInterlockProperty(.tx2Delay))
+      case .rcaTx3:     viewStore.send(.sendInterlockProperty(.tx3Delay))
+      case .timeout:    viewStore.send(.sendInterlockProperty(.timeout))
+      case .txDelay:    viewStore.send(.sendInterlockProperty(.txDelay))
+      default:          break
+      }
     }
   }
 }
@@ -149,23 +188,23 @@ private struct TxGridView: View {
   @ObservedObject var transmit: Transmit
   
   var body: some View {
-    Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
+    Grid(alignment: .leading, horizontalSpacing: 40, verticalSpacing: 20) {
       
       GridRow() {
         Toggle("TX Inhibit", isOn: viewStore.binding(
-          get: {_ in  interlock.txAllowed },
-          send: .txInhibitButton ))
+          get: {_ in  transmit.inhibit },
+          send: { .setTransmitBool(.inhibit, $0) } ))
         .toggleStyle(.checkbox)
         Toggle("TX in Waterfall", isOn: viewStore.binding(
           get: {_ in  transmit.txInWaterfallEnabled},
-          send: .txInWaterfallButton ))
+          send: { .setTransmitBool(.txInWaterfallEnabled, $0) } ))
         .toggleStyle(.checkbox)
         Text("Tx Profile")
         Picker("", selection: viewStore.binding(
-          get: {_ in  txProfile.current.id },
+          get: {_ in  txProfile.current},
           send: { .txProfile($0) })) {
-            ForEach(txProfile.list) {
-              Text($0.name).tag($0.id)
+            ForEach(txProfile.list, id: \.self) {
+              Text($0).tag($0)
             }
           }
           .labelsHidden()
@@ -175,14 +214,14 @@ private struct TxGridView: View {
       GridRow() {
         Text("Max Power")
         HStack {
-          Text("\(String(format: "%.0f", transmit.maxPowerLevel))")
+          Text("\(String(format: "%3d", transmit.maxPowerLevel))")
           Slider(value: viewStore.binding(
             get: {_ in  Double(transmit.maxPowerLevel) },
-            send: { .maxPowerLevel(Int($0)) } ), in: 0...100).frame(width: 130)
-        }
+            send: { .maxPowerLevel(Int($0)) } ), in: 0...100).frame(width: 150)
+        }.gridCellColumns(2)
         Toggle("Hardware ALC", isOn: viewStore.binding(
           get: {_ in  transmit.hwAlcEnabled},
-          send: .hardwareAlcButton ))
+          send: { .setTransmitBool(.hwAlcEnabled, $0) } ))
       }
     }
   }

@@ -35,7 +35,7 @@ public struct LogView: View {
         Divider().background(Color(.red))
         LogFooter(viewStore: viewStore)
       }
-      .onAppear( perform: { viewStore.send(.onAppear) })
+      .onAppear { viewStore.send(.onAppear) }
     }
     .frame(minWidth: 700, maxWidth: .infinity, alignment: .leading)
     .padding(10)
@@ -137,7 +137,7 @@ struct LogFooter: View {
       HStack(spacing: 20) {
         Button("Refresh") { viewStore.send(.refresh) }
           .disabled(viewStore.logUrl == nil)
-        Toggle("Auto Refresh", isOn: viewStore.binding(get: \.autoRefresh, send: .autoRefresh))
+        Toggle("Auto Refresh", isOn: viewStore.binding(get: \.autoRefresh, send: .autoRefresh)).disabled(true)
       }
       Spacer()
       

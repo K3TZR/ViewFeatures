@@ -39,7 +39,9 @@ public struct LeftSideView: View {
                     apiModel: apiModel)
       }
       .popover(isPresented: viewStore.binding(get: { $0.bandPopover }, send: .bandButton ), arrowEdge: viewStore.vertical ? .leading : .top) {
-        BandView()
+        BandView(store: Store(initialState: BandFeature.State(),
+                              reducer: BandFeature()),
+                 panadapter: apiModel.activePanadapter!)
       }
       .popover(isPresented: viewStore.binding(get: { $0.displayPopover }, send: .displayButton ), arrowEdge: viewStore.vertical ? .leading : .top) {
         DisplayView(store: Store(initialState: DisplayFeature.State(), reducer: DisplayFeature()),

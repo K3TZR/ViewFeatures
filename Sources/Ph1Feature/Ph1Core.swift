@@ -8,87 +8,45 @@
 import Foundation
 import ComposableArchitecture
 
+import Objects
 import Shared
 
 public struct Ph1Feature: ReducerProtocol {
-
   public init() {}
   
   @Dependency(\.apiModel) var apiModel
   
   public struct State: Equatable {
-
-    public init(
-    )
-    {
-    }
+    public init() {}
+  }
+  
+  public enum UpdateType{
+    case set
+    case send
+    case setAndSend
   }
   
   public enum Action: Equatable {
-    case daxButton(Bool)
-    case micAccButton(Bool)
-    case micLevelSlider(Int)
-    case micProfilePicker(UUID)
-    case micSelectionPicker(String)
-    case speechProcessorButton(Bool)
-    case speechProcessorLevelSlider(Int)
-    case ssbMonitorGainSlider(Int)
-    case ssbMonitorPanSlider(Int)
-    case txMonitorButton(Bool)
+    case profileProperty(String, String)
+    case transmitProperty(UpdateType, Transmit.Property, String)
   }
-  
+
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
 
-    case .daxButton(let enabled):
+    case .transmitProperty(let type, let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.daxEnabled, enabled.as1or0)
+        switch type {
+        case .set:        await apiModel.transmit.set(property, value)
+        case .send:       await apiModel.transmit.send(property)
+        case .setAndSend: await apiModel.transmit.setAndSend(property, value)
+        }
       }
 
-    case .micAccButton(let enabled):
+    case .profileProperty(let type, let name):
+      guard type == "mic" || type == "tx" || type == "global" else { return .none }
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.micAccEnabled, enabled.as1or0)
-      }
-
-    case .micLevelSlider(let level):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micLevel, String(level))
-      }
-
-    case .micSelectionPicker(let selection):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micSelection, selection)
-      }
-
-    case .micProfilePicker(let id):
-//      return .run { _ in
-//        await apiModel.profiles[id: "mic"]?.parseAndSend(.current, selection)
-//      }
-      return .none
-      
-    case .speechProcessorButton(let enabled):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.speechProcessorEnabled, enabled.as1or0)
-      }
-
-    case .speechProcessorLevelSlider(let level):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.speechProcessorLevel, String(level))
-      }
-
-    case .ssbMonitorGainSlider(let gain):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.ssbMonitorGain, String(gain))
-      }
-
-    case .ssbMonitorPanSlider(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.ssbMonitorPan, String(value))
-      }
-
-    case .txMonitorButton(let enabled):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.txMonitorEnabled, enabled.as1or0)
+        await apiModel.profileLoad(type, name)
       }
     }
   }

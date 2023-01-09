@@ -62,13 +62,13 @@ private struct MicGridView: View {
       GridRow() {
         Toggle("Microphone bias", isOn: viewStore.binding(
           get: {_ in transmit.micBiasEnabled },
-          send: .micBiasButton ))
+          send: { .setTransmitBool(.micBiasEnabled, $0) } ))
         Toggle("Mic level during receive", isOn: viewStore.binding(
           get: {_ in transmit.meterInRxEnabled },
-          send: .meterInRxButton ))
+          send: { .setTransmitBool(.meterInRxEnabled, $0) } ))
         Toggle("+20 db Mic gain", isOn: viewStore.binding(
           get: {_ in transmit.micBoostEnabled },
-          send: .micBoostButton ))
+          send: {.setTransmitBool(.micBoostEnabled, $0) } ))
       }
     }
   }
@@ -86,11 +86,11 @@ private struct CwGridView: View {
       GridRow() {
         Toggle("Iambic", isOn: viewStore.binding(
           get: {_ in transmit.cwIambicEnabled },
-          send: .iambicButton ))
+          send: {.setTransmitBool(.cwIambicEnabled, $0) } ))
         
         Picker("", selection: viewStore.binding(
           get: {_ in transmit.cwIambicMode == 0 ? "A" : "B"},
-          send: { .iambicMode($0) } )) {
+          send: { .setTransmitString(.cwIambicMode, ($0 == "B").as1or0) } )) {
             ForEach(iambicModes, id: \.self) {
               Text($0).tag($0)
             }
@@ -101,18 +101,18 @@ private struct CwGridView: View {
         
         Toggle("Swap dot / dash", isOn: viewStore.binding(
           get: {_ in transmit.cwSwapPaddles },
-          send: .swapPaddlesButton ))
+          send: {.setTransmitBool(.cwSwapPaddles, $0) } ))
         
         Toggle("CWX sync", isOn: viewStore.binding(
           get: {_ in transmit.cwSyncCwxEnabled },
-          send: .cwSyncCwxButton ))
+          send: {.setTransmitBool(.cwSyncCwxEnabled, $0) } ))
       }
       
       GridRow {
         Text("CW Sideband")
         Picker("", selection: viewStore.binding(
           get: {_ in transmit.cwlEnabled ? "Lower" : "Upper" },
-          send: { .cwSideband($0) } )) {
+          send: { .setTransmitString(.cwlEnabled, ($0 == "Lower").as1or0) } )) {
             ForEach(cwSidebands, id: \.self) {
               Text($0).tag($0)
             }
@@ -136,30 +136,30 @@ private struct FiltersGridView: View {
         Text(radio.filterVoiceLevel, format: .number)
         Slider(value: viewStore.binding(
           get: {_ in  Double(radio.filterVoiceLevel) },
-          send: { .filterVoiceLevel(Int($0)) }), in: 0...3, step: 1).frame(width: 250)
+          send: { .setFilterInt(.voice, Int($0)) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: viewStore.binding(
           get: {_ in  radio.filterVoiceAutoEnabled },
-          send: .filterVoiceAutoButton ))
+          send: .setFilterBool(.voice) ))
       }
       GridRow() {
         Text("CW")
         Text(radio.filterCwLevel, format: .number)
         Slider(value: viewStore.binding(
           get: {_ in  Double(radio.filterCwLevel) },
-          send: { .filterCwLevel(Int($0)) }), in: 0...3, step: 1).frame(width: 250)
+          send: { .setFilterInt(.cw, Int($0)) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: viewStore.binding(
           get: {_ in  radio.filterCwAutoEnabled },
-          send: .filterCwAutoButton ))
+          send: .setFilterBool(.cw) ))
       }
       GridRow() {
         Text("Digital")
         Text(radio.filterDigitalLevel, format: .number)
         Slider(value: viewStore.binding(
           get: {_ in  Double(radio.filterDigitalLevel) },
-          send: { .filterDigitalLevel(Int($0)) }), in: 0...3, step: 1).frame(width: 250)
+          send: { .setFilterInt(.digital, Int($0)) }), in: 0...3, step: 1).frame(width: 250)
         Toggle("Auto", isOn: viewStore.binding(
           get: {_ in  radio.filterDigitalAutoEnabled },
-          send: .filterDigitalAutoButton ))
+          send: .setFilterBool(.digital) ))
       }
     }
   }
@@ -168,17 +168,29 @@ private struct FiltersGridView: View {
 private struct RttyGridView: View {
   let viewStore: ViewStore<PhoneCwSettingsFeature.State, PhoneCwSettingsFeature.Action>
   @ObservedObject var radio: Radio
-  
+
+  enum Focusable: String, Hashable, Equatable {
+    case rttyMark
+  }
+
+  @FocusState private var hasFocus: Focusable?
+
   var body: some View {
     Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
       GridRow() {
         Text("RTTY Mark default").frame(width: 115, alignment: .leading)
         TextField("", text: viewStore.binding(
           get: {_ in String(radio.rttyMark) },
-          send: { .rttyMark(Int($0) ?? 0) } ))
+          send: { .setRadioString(.rttyMark, $0) } ))
+        .focused($hasFocus, equals: .rttyMark)
+        .onSubmit { viewStore.send(.sendRadioProperty(.rttyMark)) }
         .frame(width: 100)
         .multilineTextAlignment(.trailing)
       }
+    }
+    .onChange(of: hasFocus) {_ in
+      //        print("onChange: from \(hasFocus?.rawValue ?? "none") -> \(newValue?.rawValue ?? "none")")
+      viewStore.send(.sendRadioProperty(.rttyMark))
     }
   }
 }

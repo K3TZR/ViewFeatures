@@ -25,14 +25,13 @@ struct ProfilesSettingsView: View {
   
   var body: some View {
     
-    if apiModel.radio == nil {
+    if apiModel.clientInitialized {
+      ProfileView(store: store, profile: apiModel.profiles[id: selectedProfileType.rawValue]!, profileType: selectedProfileType)
+    } else {
       VStack {
         Text("Radio must be connected").font(.title).foregroundColor(.red)
         Text("to use Profile Settings").font(.title).foregroundColor(.red)
-      }
-      
-    } else {
-      ProfileView(store: store, profile: apiModel.profiles[id: selectedProfileType.rawValue]!, profileType: selectedProfileType)
+      }      
     }
   }
 }
@@ -42,8 +41,8 @@ private struct ProfileView: View {
   let profile: Profile
   let profileType: ProfileType
   
-  @State var selectedProfileNameId: UUID? = nil
-  @State var newProfileName = ""
+  @State private var selection: String?
+  @State private var newProfileName = ""
   
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -68,11 +67,12 @@ private struct ProfileView: View {
         TextField("New Profile Name", text: $newProfileName)
         Spacer()
         
-        List(profile.list, id: \.id, selection: $selectedProfileNameId) { profileName in
-          Text(profileName.name).tag(profileName)
-            .foregroundColor(profile.current.name == profileName.name ? .red : nil)
+        
+        List(profile.list, id: \.self, selection: $selection) { name in
+          Text(name).tag(name)
+            .foregroundColor(profile.current == name ? .red : nil)
             .onTapGesture {
-              selectedProfileNameId = selectedProfileNameId == nil ? profileName.id : nil
+              selection = selection == nil ? name : nil
             }
         }
         Divider().foregroundColor(.blue)
@@ -82,10 +82,10 @@ private struct ProfileView: View {
           Button("New") { viewStore.send(.create(profile.id, newProfileName)) }
             .disabled(newProfileName.isEmpty)
           Group {
-            Button("Delete") { viewStore.send(.delete(profile.id, selectedProfileNameId!)) }
-            Button("Reset") { viewStore.send(.reset(profile.id, selectedProfileNameId!)) }
-            Button("Load") { viewStore.send(.load(profile.id, selectedProfileNameId!)) }
-          }.disabled(selectedProfileNameId == nil)
+            Button("Delete") { viewStore.send(.delete(profile.id, selection!)) }
+            Button("Reset") { viewStore.send(.reset(profile.id, selection!)) }
+            Button("Load") { viewStore.send(.load(profile.id, selection!)) }
+          }.disabled(selection == nil)
           Spacer()
         }
       }

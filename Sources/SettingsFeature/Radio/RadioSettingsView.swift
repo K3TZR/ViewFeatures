@@ -23,13 +23,7 @@ struct RadioSettingsView: View {
   var body: some View {
     
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      if apiModel.radio == nil {
-        VStack {
-          Text("Radio must be connected").font(.title).foregroundColor(.red)
-          Text("to use Radio Settings").font(.title).foregroundColor(.red)
-        }
-
-      } else {
+      if apiModel.clientInitialized {
         VStack {
           Group {
             RadioGridView(viewStore: viewStore, radio: radio)
@@ -46,6 +40,11 @@ struct RadioSettingsView: View {
             Spacer()
           }
         }
+      } else {
+        VStack {
+          Text("Radio must be connected").font(.title).foregroundColor(.red)
+          Text("to use Radio Settings").font(.title).foregroundColor(.red)
+        }
       }
     }
   }
@@ -54,9 +53,15 @@ struct RadioSettingsView: View {
 private struct RadioGridView: View {
   let viewStore: ViewStore<RadioSettingsFeature.State, RadioSettingsFeature.Action>
   @ObservedObject var radio: Radio
-  
+
+  enum Focusable: String, Hashable, Equatable {
+    case callsign
+    case radioName
+  }
+
   private let width: CGFloat = 150
-  
+  @FocusState private var hasFocus: Focusable?
+
   var body: some View {
     Grid(alignment: .leading, horizontalSpacing: 30, verticalSpacing: 10) {
       GridRow() {
@@ -79,7 +84,7 @@ private struct RadioGridView: View {
         Text("Region")
         Picker("", selection: viewStore.binding(
           get: {_ in  radio.region },
-          send: { .region($0) })) {
+          send: { .setRadioString(.region, $0) })) {
             ForEach(radio.regionList, id: \.self) {
               Text($0).tag($0)
             }
@@ -91,9 +96,9 @@ private struct RadioGridView: View {
         Text("Screen saver")
         Picker("", selection: viewStore.binding(
           get: {_ in  radio.radioScreenSaver },
-          send: { .screenSaver($0) })) {
-            ForEach(["model","nickname","callsign"] , id: \.self) {
-              Text($0).tag($0)
+          send: { .setRadioString(.screensaver, $0) })) {
+            ForEach(["Model","Name","Callsign"] , id: \.self) {
+              Text($0).tag($0.lowercased())
             }
           }
           .labelsHidden()
@@ -102,16 +107,28 @@ private struct RadioGridView: View {
       }
       GridRow() {
         Text("Callsign")
-        TextField("Callsign", text: viewStore.binding(
+        TextField("", text: viewStore.binding(
           get: {_ in  radio.callsign },
-          send: { .callsign($0) }))
-        .frame(width: width)
+          send: { .setRadioString(.callsign, $0) }))
+          .focused($hasFocus, equals: .callsign)
+          .onSubmit { viewStore.send(.sendRadioProperty(.callsign)) }
+          .frame(width: width)
         
-        Text("Nickname")
-        TextField("Nickname", text: viewStore.binding(
-          get: {_ in  radio.nickname },
-          send: { .nickname($0) }))
-        .frame(width: width)
+        Text("Radio Name")
+        TextField("", text: viewStore.binding(
+          get: {_ in  radio.name },
+          send: { .setRadioString(.name, $0) }))
+          .focused($hasFocus, equals: .radioName)
+          .onSubmit { viewStore.send(.sendRadioProperty(.name)) }
+          .frame(width: width)
+      }
+      .onChange(of: hasFocus) { [hasFocus] _ in
+//        print("onChange: from \(hasFocus?.rawValue ?? "none") -> \(newValue?.rawValue ?? "none")")
+        switch hasFocus {
+        case .callsign:   viewStore.send(.sendRadioProperty(.callsign))
+        case .radioName:  viewStore.send(.sendRadioProperty(.name))
+        default:          break
+        }
       }
     }
   }
@@ -122,25 +139,25 @@ private struct ButtonsGridView: View {
   @ObservedObject var radio: Radio
   
   var body: some View {
-    Grid(alignment: .leading, horizontalSpacing: 30, verticalSpacing: 10) {
+    Grid(alignment: .leading, horizontalSpacing: 5, verticalSpacing: 10) {
       GridRow() {
         Toggle("Remote On", isOn: viewStore.binding(
           get: {_ in radio.remoteOnEnabled },
-          send: .remoteOnButton ))
+          send: .setRadioBool(.remoteOnEnabled) ))
         Toggle("Flex Control", isOn: viewStore.binding(
           get: {_ in radio.flexControlEnabled },
-          send: .flexControlButton ))
+          send: .setRadioBool(.flexControlEnabled) ))
         Toggle("Mute audio (remote)", isOn: viewStore.binding(
           get: {_ in  radio.muteLocalAudio },
-          send: .muteLocalAudioButton ))
+          send: .setRadioBool(.muteLocalAudio) ))
         Toggle("Binaural audio", isOn: viewStore.binding(
           get: {_ in  radio.binauralRxEnabled },
-          send: .binauralRxButton ))
-      }
+          send: .setRadioBool(.binauralRxEnabled) ))
+      }.frame(width: 150, alignment: .leading)
       GridRow() {
         Toggle("Snap to tune step", isOn: viewStore.binding(
           get: {_ in  radio.snapTuneEnabled},
-          send: .snapTuneButton ))
+          send: .setRadioBool(.snapTuneEnabled) ))
         Toggle("Single click to tune", isOn: viewStore.binding(
           get: {_ in  false },
           send: .singleClickButton ))
@@ -148,8 +165,10 @@ private struct ButtonsGridView: View {
         Toggle("Start slices minimized", isOn: viewStore.binding(
           get: {_ in  false },
           send: .sliceMinimizedButton ))
+        .gridCellColumns(2)
         .disabled(true)
       }
+//      .frame(width: 150, alignment: .leading)
     }
   }
 }
@@ -158,26 +177,44 @@ private struct CalibrationGridView: View {
   let viewStore: ViewStore<RadioSettingsFeature.State, RadioSettingsFeature.Action>
   @ObservedObject var radio: Radio
   
-  private let width: CGFloat = 140
-  
+  private let width: CGFloat = 100
+  enum Focusable: String, Hashable, Equatable {
+    case frequency
+    case error
+  }
+  @FocusState private var hasFocus: Focusable?
+
   var body: some View {
-    Grid(alignment: .center, horizontalSpacing: 25, verticalSpacing: 10) {
+    
+    Grid(alignment: .center, horizontalSpacing: 40, verticalSpacing: 10) {
       GridRow() {
-        Text("Frequency")
-        TextField("", text: viewStore.binding(
-          get: {_ in  String(radio.calFreq) },
-          send: { .calibrationFrequency(Int($0) ?? 0) }))
-        .frame(width: width)
-        .multilineTextAlignment(.trailing)
+        Text("Frequency (MHz)")
+        TextField("", value: viewStore.binding(
+          get: {_ in  radio.calFreq },
+          send: { .setRadioString(.calFreq, String($0)) }), format: .number.precision(.fractionLength(6)))
+          .focused($hasFocus, equals: .frequency)
+          .onSubmit { viewStore.send(.sendRadioProperty(.calFreq)) }
+          .multilineTextAlignment(.trailing)
+          .frame(width: width)
         
         Button("Calibrate") { viewStore.send(.calibrateButton) }
         
         Text("Offset (ppb)")
-        TextField("", text: viewStore.binding(
-          get: {_ in  String(radio.freqErrorPpb) },
-          send: { .calibrationError(Int($0) ?? 0) }))
-        .frame(width: width)
-        .multilineTextAlignment(.trailing)
+        TextField("", value: viewStore.binding(
+          get: {_ in  radio.freqErrorPpb },
+          send: { .setRadioString(.freqErrorPpb, String($0)) }), format: .number)
+          .focused($hasFocus, equals: .error)
+          .onSubmit { viewStore.send(.sendRadioProperty(.freqErrorPpb)) }
+          .multilineTextAlignment(.trailing)
+          .frame(width: width)
+      }
+      .onChange(of: hasFocus) { [hasFocus] _ in
+//        print("onChange: from \(hasFocus?.rawValue ?? "none") -> \(newValue?.rawValue ?? "none")")
+        switch hasFocus {
+        case .error:      viewStore.send(.sendRadioProperty(.freqErrorPpb))
+        case .frequency:  viewStore.send(.sendRadioProperty(.calFreq))
+        default:          break
+        }
       }
     }
   }
@@ -185,7 +222,8 @@ private struct CalibrationGridView: View {
 
 struct RadioSettingsView_Previews: PreviewProvider {
   static var previews: some View {
-    RadioSettingsView(store: Store(initialState: RadioSettingsFeature.State(), reducer: RadioSettingsFeature()), radio: Radio(Packet()))
+    RadioSettingsView(store: Store(initialState: RadioSettingsFeature.State(),
+                                   reducer: RadioSettingsFeature()), radio: Radio(Packet()))
       .frame(width: 600, height: 350)
       .padding()
   }

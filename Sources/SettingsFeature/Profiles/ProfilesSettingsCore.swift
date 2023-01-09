@@ -30,9 +30,9 @@ public struct ProfilesSettingsFeature: ReducerProtocol {
   
   public enum Action: Equatable {
     case create(String, String)
-    case delete(String, UUID)
-    case reset(String, UUID)
-    case load(String, UUID)
+    case delete(String, String)
+    case reset(String, String)
+    case load(String, String)
     case selectedType(ProfileType)
   }
   
@@ -45,20 +45,20 @@ public struct ProfilesSettingsFeature: ReducerProtocol {
         await apiModel.profileCreate(profileType, profileName)
       }
 
-    case .delete(let profileType, let profileNameId):
+    case .delete(let profileType, let profileName):
       return .run { _ in
-        await apiModel.profileDelete(profileType, profileNameId)
+        await apiModel.profileDelete(profileType, profileName)
       }
 
-    case .reset(let profileType, let profileNameId):
+    case .reset(let profileType, let profileName):
       return .run { _ in
-        await apiModel.profileDelete(profileType, profileNameId)
+        await apiModel.profileDelete(profileType, profileName)
       }
 
-    case .load(let profileType, let profileNameId):
-      print("select, type = \(profileType), id = \(profileNameId)")
+    case .load(let profileType, let profileName):
+      print("select, type = \(profileType), id = \(profileName)")
       return .run { _ in
-        await apiModel.profileLoad(profileType, profileNameId)
+        await apiModel.profileLoad(profileType, profileName)
       }
       
     case .selectedType(let type):

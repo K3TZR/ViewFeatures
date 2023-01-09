@@ -19,12 +19,7 @@ struct NetworkSettingsView: View {
   
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      if apiModel.radio == nil {
-        VStack {
-          Text("Radio must be connected").font(.title).foregroundColor(.red)
-          Text("to use Network Settings").font(.title).foregroundColor(.red)
-        }
-      } else {
+      if apiModel.clientInitialized {
         VStack {
           Spacer()
           Grid(alignment: .leading, horizontalSpacing: 40, verticalSpacing: 20) {
@@ -35,6 +30,11 @@ struct NetworkSettingsView: View {
             StaticAddressView(viewStore: viewStore, radio: radio)
             Spacer()
           }
+        }
+      } else {
+        VStack {
+          Text("Radio must be connected").font(.title).foregroundColor(.red)
+          Text("to use Network Settings").font(.title).foregroundColor(.red)
         }
       }
     }

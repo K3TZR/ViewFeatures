@@ -43,7 +43,7 @@ private struct Dax: View {
       Text("Dax IQ Channel")
       Picker("", selection: viewStore.binding(
         get: {_ in  panadapter.daxIqChannel },
-        send: { .daxIqChannelPicker($0) })) {
+        send: { .panadapterProperty(.daxIqChannel, String($0)) })) {
           ForEach(panadapter.daxIqChoices, id: \.self) {
             Text(String($0)).tag($0)
           }

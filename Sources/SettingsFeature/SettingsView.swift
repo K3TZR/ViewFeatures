@@ -39,9 +39,13 @@ public struct SettingsView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       TabView(selection: $selectedSettingType) {
         Group {
-          RadioSettingsView(store: Store(initialState: RadioSettingsFeature.State(),
-                                         reducer: RadioSettingsFeature()),
-                            radio: apiModel.radio ?? Radio(Packet()) )
+          RadioSettingsView(store: Store(
+            initialState: RadioSettingsFeature.State(),
+//            calibrationError: apiModel.radio?.freqErrorPpb ?? 5,
+//                                                     calibrationFrequency: apiModel.radio?.calFreq ?? 15.0,
+//                                                     callsign: apiModel.radio?.callsign ?? "K3TZR",
+//                                                     radioName: apiModel.radio?.name ?? "Dougs Radio"),
+            reducer: RadioSettingsFeature()), radio: apiModel.radio ?? Radio(Packet()))
           .tabItem {
             Text(SettingType.radio.rawValue)
             Image(systemName: "antenna.radiowaves.left.and.right")

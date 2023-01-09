@@ -60,14 +60,14 @@ private struct PowerView: View {
         Text("Rf Power").frame(width: 75, alignment: .leading)
         HStack(spacing: 20) {
           Text("\(transmit.rfPower)").frame(width: 25, alignment: .trailing)
-          Slider(value: viewStore.binding(get: {_ in Double(transmit.rfPower) }, send: { .rfPowerSlider( Int($0)) }), in: 0...100)
+          Slider(value: viewStore.binding(get: {_ in Double(transmit.rfPower) }, send: { .setTransmitInt(.rfPower, Int($0)) }), in: 0...100)
         }
       }
       HStack(spacing: 10) {
         Text("Tune Power").frame(width: 75, alignment: .leading)
         HStack(spacing: 20) {
           Text("\(transmit.tunePower)").frame(width: 25, alignment: .trailing)
-          Slider(value: viewStore.binding(get: {_ in Double(transmit.tunePower) }, send: { .tunePowerSlider( Int($0)) }), in: 0...100)
+          Slider(value: viewStore.binding(get: {_ in Double(transmit.tunePower) }, send: { .setTransmitInt(.tunePower, Int($0)) }), in: 0...100)
         }
       }
     }
@@ -82,10 +82,10 @@ private struct ProfileView: View {
   public var body: some View {
     HStack(spacing: 25) {
       Picker("", selection: viewStore.binding(
-        get: {_ in  txProfile.current.id },
-        send: { .txProfilePicker($0) })) {
-        ForEach(txProfile.list) {
-          Text($0.name).tag($0.id)
+        get: {_ in  txProfile.current },
+        send: { .txProfile($0) })) {
+          ForEach(txProfile.list, id: \.self) {
+          Text($0).tag($0)
         }
       }
       .labelsHidden()
@@ -106,9 +106,10 @@ private struct AtuStatusView: View {
   
   public var body: some View {
     HStack(spacing: 20) {
-      Button(action: { viewStore.send(.atuButton) })
-      { Text("ATU").frame(width: 40) }.background(atu.enabled ? Color(.controlAccentColor) : Color(.controlBackgroundColor))
-        .disabled(atu.enabled == false)
+      Toggle(isOn: viewStore.binding(
+        get: {_ in atu.enabled},
+        send: { .setAtuBool(.enabled, $0) })) { Text("ATU").frame(width: 40) }
+        .toggleStyle(.button)
       
       Text(atu.status.rawValue).frame(width: 180)
         .border(.secondary)
@@ -127,10 +128,10 @@ private struct ButtonsView: View {
       Group {
         Toggle(isOn: viewStore.binding(
           get: {_ in atu.memoriesEnabled},
-          send: { .memoriesEnabledButton($0) })) { Text("MEM").frame(width: 40) }
+          send: { .setAtuBool(.memoriesEnabled, $0) })) { Text("MEM").frame(width: 40) }
         Toggle(isOn: viewStore.binding(
           get: {_ in transmit.tune},
-          send: { .tuneButton($0) } )) { Text("TUNE").frame(width: 40) }
+          send: { .setTransmitBool(.tune, $0) } )) { Text("TUNE").frame(width: 40) }
         Toggle(isOn: viewStore.binding(
           get: {_ in radio.mox},
           send: { .moxButton($0) } )) { Text("MOX").frame(width: 40) }

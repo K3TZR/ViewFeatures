@@ -8,6 +8,7 @@
 import Foundation
 import ComposableArchitecture
 
+import Objects
 import Shared
 
 public struct CwFeature: ReducerProtocol {
@@ -19,59 +20,26 @@ public struct CwFeature: ReducerProtocol {
     public init() {}
   }
   
+  public enum UpdateType{
+    case set
+    case send
+    case setAndSend
+  }
+  
   public enum Action: Equatable {
-    case breakinButton
-    case delayLevel(Int)
-    case iambicButton
-    case pitchChange(Int)
-    case sidetoneButton
-    case sidetoneGain(Int)
-    case sidetonePan(Int)
-    case speedLevel(Int)
+    case transmitProperty(UpdateType, Transmit.Property, String)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    
     switch action {
 
-    case .breakinButton:
+    case .transmitProperty(let type, let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwBreakInEnabled)
-      }
-
-    case .delayLevel(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwBreakInDelay, String(value))
-      }
-
-    case .iambicButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwIambicEnabled)
-      }
-
-    case .pitchChange(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwPitch, String(value))
-      }
-
-    case .sidetoneButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwSidetoneEnabled)
-      }
-
-    case .sidetoneGain(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwMonitorGain, String(value))
-      }
-
-    case .sidetonePan(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwMonitorPan, String(value))
-      }
-
-    case .speedLevel(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.cwSpeed, String(value))
+        switch type {
+        case .set:        await apiModel.transmit.set(property, value)
+        case .send:       await apiModel.transmit.send(property)
+        case .setAndSend: await apiModel.transmit.setAndSend(property, value)
+        }
       }
     }
   }

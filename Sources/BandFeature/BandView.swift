@@ -5,45 +5,44 @@
 //  Created by Douglas Adams on 12/20/22.
 //
 
+import ComposableArchitecture
 import SwiftUI
 
+import Objects
+import Shared
+
 public struct BandView: View {
+  let store: StoreOf<BandFeature>
+  @ObservedObject var panadapter: Panadapter
   
-  public init() {}
+  public init(
+    store: StoreOf<BandFeature>,
+    panadapter: Panadapter
+  )
+  {
+    self.store = store
+    self.panadapter = panadapter
+  }
   
+  let bandList = [
+    "160","80","60",
+    "40","30","20",
+    "17","15","12",
+    "10","6","4",
+    "","WWV","GEN",
+    "2200","6300","XVTR",
+  ]
+
   public var body: some View {
-    
-    Grid(alignment: .leading, horizontalSpacing: 2, verticalSpacing: 5) {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       
-      GridRow(alignment: .center) {
-        Button(action: {}) { Text("160").frame(width: 35) }
-        Button(action: {}) { Text("80").frame(width: 35) }
-        Button(action: {}) { Text("60").frame(width: 35) }
-      }
-      GridRow(alignment: .center)  {
-        Button(action: {}) { Text("40").frame(width: 35) }
-        Button(action: {}) { Text("30").frame(width: 35) }
-        Button(action: {}) { Text("20").frame(width: 35) }
-      }
-      GridRow(alignment: .center)  {
-        Button(action: {}) { Text("17").frame(width: 35) }
-        Button(action: {}) { Text("15").frame(width: 35) }
-        Button(action: {}) { Text("12").frame(width: 35) }
-      }
-      GridRow (alignment: .center) {
-        Button(action: {}) { Text("10").frame(width: 35) }
-        Button(action: {}) { Text("6").frame(width: 35) }
-        Button(action: {}) { Text("4").frame(width: 35) }
-      }
-      GridRow(alignment: .center)  {
-        Button(action: {}) { Text("").frame(width: 35) }
-        Button(action: {}) { Text("WWV").frame(width: 35) }
-        Button(action: {}) { Text("GEN").frame(width: 35) }
-      }
-      GridRow(alignment: .center)  {
-        Button(action: {}) { Text("2200").frame(width: 35) }
-        Button(action: {}) { Text("6300").frame(width: 35) }
-        Button(action: {}) { Text("XVTR").frame(width: 35) }
+      Grid(alignment: .leading, horizontalSpacing: 2, verticalSpacing: 5) {
+        RowView(store: store, panadapter: panadapter, bands: bandList[0...2])
+        RowView(store: store, panadapter: panadapter, bands: bandList[3...5])
+        RowView(store: store, panadapter: panadapter, bands: bandList[6...8])
+        RowView(store: store, panadapter: panadapter, bands: bandList[9...11])
+        RowView(store: store, panadapter: panadapter, bands: bandList[12...14])
+        RowView(store: store, panadapter: panadapter, bands: bandList[15...17])
       }
     }
     .frame(width: 160)
@@ -51,8 +50,30 @@ public struct BandView: View {
   }
 }
 
-struct BandView_Previews: PreviewProvider {
-    static var previews: some View {
-        BandView()
+struct RowView: View {
+  let store: StoreOf<BandFeature>
+  @ObservedObject var panadapter: Panadapter
+  let bands: ArraySlice<String>
+
+  var body: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      
+      GridRow(alignment: .center) {
+        ForEach(bands, id: \.self) { band in
+          Toggle(isOn: viewStore.binding(
+            get: { _ in  panadapter.band == band && !band.isEmpty},
+            send: .panadapterProperty(.band, band) ))
+          { Text(band).frame(width: 35) }
+            .toggleStyle(.button)
+        }
+      }
     }
+  }
+}
+struct BandView_Previews: PreviewProvider {
+  static var previews: some View {
+    BandView(store: Store(initialState: BandFeature.State(),
+                        reducer: BandFeature()),
+           panadapter: Panadapter("0x99999999".streamId!))
+  }
 }

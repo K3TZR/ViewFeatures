@@ -33,32 +33,22 @@ public struct EqFeature: ReducerProtocol {
     switch action {
 
     case .onButton:
-      return .run {[state] send in
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.eqEnabled)
+      return .run {[id = state.eqId] send in
+        await apiModel.equalizerEnable(id)
       }
 
     case .flatButton:
-      return .run {[state] send in
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz63)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz125)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz250)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz500)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz1000)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz2000)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz4000)
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(.hz8000)
+      return .run {[id = state.eqId] send in
+        await apiModel.equalizerFlat(id)
       }
-
       
-    case .rxButton:
+    case .rxButton, .txButton:
+      // action taken in parent feature
       return .none
 
-    case .txButton:
-      return .none
-      
     case .levelChange(let level, let value):
-      return .run {[state] send in
-        await apiModel.equalizers[id: state.eqId]!.setEqProperty(level, value)
+      return .run {[id = state.eqId] send in
+        await apiModel.equalizerLevel(id, level, value)
       }
     }
   }

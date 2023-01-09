@@ -43,7 +43,7 @@ private struct Antenna: View {
       Text("RxAnt")
       Picker("RxAnt", selection: viewStore.binding(
         get: {_ in  panadapter.rxAnt },
-        send: { .antSelectionPicker($0) })) {
+        send: { .panadapterProperty(.rxAnt, $0) })) {
           ForEach(panadapter.antList, id: \.self) {
             Text($0).tag($0)
           }
@@ -52,44 +52,18 @@ private struct Antenna: View {
         .pickerStyle(.menu)
         .frame(width: 70, alignment: .leading)
     }
-//    Button(action: { viewStore.send(.loopAButton) }) { Text("LoopA") }
-
-//    HStack {
       Toggle("Loop A", isOn: viewStore.binding(
         get: {_ in panadapter.loopAEnabled },
-        send: .loopAButton ))
+        send: { .panadapterProperty(.loopAEnabled, $0.as1or0 ) } ))
       .toggleStyle(.button)
-//    }
 
     HStack {
       Text("Rf Gain")
       Text("\(panadapter.rfGain)").frame(width: 25, alignment: .trailing)
-      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .rfGainSlider( Int($0)) }), in: -10...20, step: 10)
+      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .panadapterProperty(.rfGain, String(Int($0))) }), in: -10...20, step: 10)
     }
   }
 }
-
-//private struct Loop: View {
-//  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
-//  @ObservedObject var panadapter: Panadapter
-//
-//  var body: some View {
-//    Button(action: {}) { Text("LoopA") }
-//    }
-//}
-//
-//private struct RfGain: View {
-//  let viewStore: ViewStore<AntennaFeature.State, AntennaFeature.Action>
-//  @ObservedObject var panadapter: Panadapter
-//
-//  var body: some View {
-//    HStack {
-//      Text("Rf Gain")
-//      Text("\(panadapter.rfGain)").frame(width: 25, alignment: .trailing)
-//      Slider(value: viewStore.binding(get: {_ in Double(panadapter.rfGain) }, send: { .rfGainSlider( Int($0)) }), in: -10...40, step: 10)
-//    }
-//  }
-//}
 
 struct AntennaView_Previews: PreviewProvider {
     static var previews: some View {

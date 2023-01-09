@@ -29,7 +29,7 @@ public struct RxFeature: ReducerProtocol {
     case tuneButton
     case rfPowerSlider(Int)
     case tunePowerSlider(Int)
-    case txProfilePicker(UUID)
+    case txProfilePicker(String)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -59,8 +59,8 @@ public struct RxFeature: ReducerProtocol {
       print("tunePowerSlider = \(level)")
       return .none
       
-    case .txProfilePicker(let profile):
-      print("txProfilePicker = \(profile)")
+    case .txProfilePicker(let profileName):
+      print("txProfilePicker = \(profileName)")
       return .none
 
     }

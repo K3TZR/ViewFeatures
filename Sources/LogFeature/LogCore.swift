@@ -11,11 +11,9 @@ import SwiftUI
 import Shared
 
 public struct LogFeature: ReducerProtocol {
-
   public init() {}
   
   public struct State: Equatable {
-    
     public init() {}
 
     public var autoRefresh = false
@@ -46,7 +44,6 @@ public struct LogFeature: ReducerProtocol {
     case showTimestamps
     case toggle(WritableKeyPath<LogFeature.State, Bool>)
 
-    
     case refilter
   }
   
@@ -56,7 +53,6 @@ public struct LogFeature: ReducerProtocol {
     case .onAppear:
       let info = getBundleInfo()
       state.url = URL.appSupport.appendingPathComponent(info.domain + "." + info.appName + "/Logs/" + info.appName + ".log" )
-      
       reload(&state)
       return .none
 

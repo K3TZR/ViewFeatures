@@ -19,59 +19,27 @@ public struct Ph2Feature: ReducerProtocol {
   public struct State: Equatable {    
     public init() {}
   }
+
+  public enum UpdateType{
+    case set
+    case send
+    case setAndSend
+  }
   
   public enum Action: Equatable {
-    case micBiasButton
-    case dexpButton
-    case meterInRxButton
-    case micBoostButton
-    case voxButton
-    case levelSlider(Transmit.Property, Int)
-    case txFilterLowCut(Int)
-    case txFilterHighCut(Int)
+    case transmitProperty(UpdateType, Transmit.Property, String)
   }
   
   public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
 
-    case .dexpButton:
+    case .transmitProperty(let type, let property, let value):
       return .run { _ in
-        await apiModel.transmit.parseAndSend(.companderEnabled)
-      }
-
-    case .levelSlider(let type, let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(type, String(value))
-      }
-
-    case .meterInRxButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.meterInRxEnabled)
-      }
-
-    case .micBiasButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBiasEnabled)
-      }
-
-    case .micBoostButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.micBoostEnabled)
-      }
-
-    case .txFilterHighCut(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.txFilterHigh, String(value))
-      }
-
-    case .txFilterLowCut(let value):
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.txFilterLow, String(value))
-      }
-
-    case .voxButton:
-      return .run { _ in
-        await apiModel.transmit.parseAndSend(.voxEnabled)
+        switch type {
+        case .set:        await apiModel.transmit.set(property, value)
+        case .send:       await apiModel.transmit.send(property)
+        case .setAndSend: await apiModel.transmit.setAndSend(property, value)
+        }
       }
     }
   }

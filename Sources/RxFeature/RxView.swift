@@ -78,10 +78,10 @@ private struct ProfileView: View {
   public var body: some View {
     HStack(spacing: 20) {
       Picker("", selection: viewStore.binding(
-        get: {_ in  txProfile.current.id },
+        get: {_ in  txProfile.current },
         send: { .txProfilePicker($0) })) {
-        ForEach(txProfile.list) {
-          Text($0.name).tag($0.id)
+          ForEach(txProfile.list, id: \.self) {
+          Text($0).tag($0)
         }
       }
       .labelsHidden()
