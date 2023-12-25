@@ -5,6 +5,7 @@
 //  Created by Douglas Adams on 1/19/22.
 //
 
+import IdentifiedCollections
 import SwiftUI
 
 import SharedModel
@@ -15,20 +16,23 @@ import SharedModel
 // assumes that the number of GuiClients is 1 or 2
 
 public struct ClientView: View {
-  var packet: Binding<Packet?>
   var heading: String
-  var choice: Binding<UInt32?>
+  var stations: IdentifiedArrayOf<Station>
+  var idToDisconnect: Binding<String?>
+  var pickerSelection: Binding<String?>
 
   public init
   (
-    packet: Binding<Packet?>,
     heading: String = "Choose an action",
-    choice: Binding<UInt32?>
+    stations: IdentifiedArrayOf<Station>,
+    idToDisconnect: Binding<String?>,
+    pickerSelection: Binding<String?>
   )
   {
-    self.packet = packet
     self.heading = heading
-    self.choice = choice
+    self.stations = stations
+    self.idToDisconnect = idToDisconnect
+    self.pickerSelection = pickerSelection
   }
 
   @Environment(\.dismiss) var dismiss
@@ -38,24 +42,18 @@ public struct ClientView: View {
       Text(heading).font(.title)
       Divider().background(Color.blue)
       
-      if packet.wrappedValue?.guiClients.count == 1 {
-        Button( action: { choice.wrappedValue = nil ; dismiss() })
+      if stations.count == 1 {
+        Button( action: { idToDisconnect.wrappedValue = nil ; dismiss() })
         { Text("MultiFlex connect").frame(width: 150) }
-
-        Button( action: { choice.wrappedValue = packet.wrappedValue!.guiClients[0].handle ; dismiss() })
-        { Text("Close " + packet.wrappedValue!.guiClients[0].station).frame(width: 150) }
       }
       
-      if packet.wrappedValue?.guiClients.count == 2 {
-        Button( action: { choice.wrappedValue = packet.wrappedValue!.guiClients[0].handle  ; dismiss() })
-        { Text("Close " + packet.wrappedValue!.guiClients[0].station).frame(width: 150) }
-
-        Button( action: { choice.wrappedValue = packet.wrappedValue!.guiClients[1].handle  ; dismiss() })
-        { Text("Close " + packet.wrappedValue!.guiClients[1].station).frame(width: 150) }
+      ForEach(stations) { item in
+        Button( action: { idToDisconnect.wrappedValue = item.packet.id ; dismiss() })
+        { Text("Close " + item.station).frame(width: 150) }
       }
-      
+              
       Divider().background(Color.blue)
-      Button( action: { packet.wrappedValue = nil ; choice.wrappedValue = nil ; dismiss() })
+      Button( action: { pickerSelection.wrappedValue = nil ; dismiss() })
       { Text("Cancel") }
         .keyboardShortcut(.cancelAction)
     }
@@ -68,11 +66,13 @@ public struct ClientView: View {
 // MARK: - Preview(s)
 
 #Preview("Gui connect (disconnect not required)") {
-  ClientView(packet: .constant(Packet()),
-             choice: .constant(UInt32?(nil)))
+  ClientView(stations: [Station(packet: Packet(), station: "K3TZR")], 
+             idToDisconnect: .constant(String?(nil)),
+             pickerSelection: .constant(String?(nil)))
 }
 
 #Preview("Gui connect (disconnect required)") {
-  ClientView(packet: .constant(Packet()),
-             choice: .constant(UInt32?(nil)))
+  ClientView(stations: [Station(packet: Packet(), station: "K3TZS"), Station(packet: Packet(), station: "N4CEC")],
+             idToDisconnect: .constant(String?(nil)),
+             pickerSelection: .constant(String?(nil)))
 }
