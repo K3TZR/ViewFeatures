@@ -58,7 +58,7 @@ final public class LogModel {
     
     do {
       // get the contents of the file
-      let logString = try String(contentsOf: _fileUrl!, encoding: .ascii)
+      let logString = try String(contentsOf: fileUrl, encoding: .ascii)
       // parse it into lines
       let entries = logString.components(separatedBy: "\n").dropLast()
       for entry in entries {
@@ -67,7 +67,7 @@ final public class LogModel {
       filterLog()
       
     } catch {
-      fatalError("Unable to read Log file at \(_fileUrl!)")
+      fatalError("Unable to read Log file at \(fileUrl)")
     }
   }
   

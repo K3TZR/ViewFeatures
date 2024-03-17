@@ -17,21 +17,21 @@ import SharedModel
 
 public struct ClientView: View {
   var heading: String
-  var stations: IdentifiedArrayOf<Station>
-  var idToDisconnect: Binding<String?>
+  var guiClients: IdentifiedArrayOf<GuiClient>
+  var handleToDisconnect: Binding<UInt32?>
   var pickerSelection: Binding<String?>
 
   public init
   (
     heading: String = "Choose an action",
-    stations: IdentifiedArrayOf<Station>,
-    idToDisconnect: Binding<String?>,
+    guiClients: IdentifiedArrayOf<GuiClient>,
+    handleToDisconnect: Binding<UInt32?>,
     pickerSelection: Binding<String?>
   )
   {
     self.heading = heading
-    self.stations = stations
-    self.idToDisconnect = idToDisconnect
+    self.guiClients = guiClients
+    self.handleToDisconnect = handleToDisconnect
     self.pickerSelection = pickerSelection
   }
 
@@ -42,14 +42,14 @@ public struct ClientView: View {
       Text(heading).font(.title)
       Divider().background(Color.blue)
       
-      if stations.count == 1 {
-        Button( action: { idToDisconnect.wrappedValue = nil ; dismiss() })
+      if guiClients.count == 1 {
+        Button( action: { handleToDisconnect.wrappedValue = nil ; dismiss() })
         { Text("MultiFlex connect").frame(width: 150) }
       }
       
-      ForEach(stations) { item in
-        Button( action: { idToDisconnect.wrappedValue = item.packet.id ; dismiss() })
-        { Text("Close " + item.station).frame(width: 150) }
+      ForEach(guiClients) { guiClient in
+        Button( action: { handleToDisconnect.wrappedValue = guiClient.handle ; dismiss() })
+        { Text("Close " + guiClient.station).frame(width: 150) }
       }
               
       Divider().background(Color.blue)
@@ -65,14 +65,14 @@ public struct ClientView: View {
 // ----------------------------------------------------------------------------
 // MARK: - Preview(s)
 
-#Preview("Gui connect (disconnect not required)") {
-  ClientView(stations: [Station(packet: Packet(), station: "K3TZR")], 
-             idToDisconnect: .constant(String?(nil)),
-             pickerSelection: .constant(String?(nil)))
-}
-
-#Preview("Gui connect (disconnect required)") {
-  ClientView(stations: [Station(packet: Packet(), station: "K3TZS"), Station(packet: Packet(), station: "N4CEC")],
-             idToDisconnect: .constant(String?(nil)),
-             pickerSelection: .constant(String?(nil)))
-}
+//#Preview("Gui connect (disconnect not required)") {
+//  ClientView(guiClients: GuiClient(handle: 1),
+//             handleToDisconnect: .constant(UInt32?(nil)),
+//             pickerSelection: .constant(String?(nil)))
+//}
+//
+//#Preview("Gui connect (disconnect required)") {
+//  ClientView(guiClients: [GuiClient(handle: 1), GuiClient(handle: 2)]
+//             handleToDisconnect: .constant(UInt32?(nil)),
+//             pickerSelection: .constant(String?(nil)))
+//}
