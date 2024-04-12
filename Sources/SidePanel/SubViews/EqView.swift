@@ -21,13 +21,17 @@ public struct EqView: View {
 
   public init() {}
   
+ @MainActor private var equalizer: Equalizer {
+    apiModel.equalizers[id: "rxsc"]!
+  }
+  
   public var body: some View {
     
     VStack(alignment: .leading, spacing: 10) {
-      HeadingView(equalizer: apiModel.equalizers[id: settings.selectedEqualizerId] ?? Equalizer("dummy"))
+      HeadingView(equalizer: equalizer)
       HStack(spacing: 20) {
-        ButtonView(equalizer: apiModel.equalizers[id: settings.selectedEqualizerId] ?? Equalizer("dummy"))
-        SliderView(equalizer: apiModel.equalizers[id: settings.selectedEqualizerId] ?? Equalizer("dummy"))
+        ButtonView(equalizer: equalizer)
+        SliderView(equalizer: equalizer)
       }
       Divider().background(.blue)
     }
@@ -86,14 +90,14 @@ private struct SliderView: View {
     
     VStack(alignment: .center, spacing: 5) {
       Group {
-        Slider(value: Binding(get: { Double(equalizer.hz63)}, set: { equalizer.setProperty(.hz63, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz125)}, set: { equalizer.setProperty(.hz125, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz250)}, set: { equalizer.setProperty(.hz250, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz500)}, set: { equalizer.setProperty(.hz500, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz1000)}, set: { equalizer.setProperty(.hz1000, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz2000)}, set: { equalizer.setProperty(.hz2000, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz4000)}, set: { equalizer.setProperty(.hz4000, String(Int($0))) }), in: -10...10)
-        Slider(value: Binding(get: { Double(equalizer.hz8000)}, set: { equalizer.setProperty(.hz8000, String(Int($0))) }), in: -10...10)
+        Slider(value: Binding(get: { Double(equalizer.hz63)}, set: { equalizer.setProperty(.hz63, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz125)}, set: { equalizer.setProperty(.hz125, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz250)}, set: { equalizer.setProperty(.hz250, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz500)}, set: { equalizer.setProperty(.hz500, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz1000)}, set: { equalizer.setProperty(.hz1000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz2000)}, set: { equalizer.setProperty(.hz2000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz4000)}, set: { equalizer.setProperty(.hz4000, String(Int($0))) }), in: -10...10, step: 1)
+        Slider(value: Binding(get: { Double(equalizer.hz8000)}, set: { equalizer.setProperty(.hz8000, String(Int($0))) }), in: -10...10, step: 1)
       }
       .frame(width: 180)
     }
